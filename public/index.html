@@ -1,60 +1,197 @@
 <!DOCTYPE html>
-<html lang="so">
+<html lang="so" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <title>Render Bot Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Render Bot Manager Pro</title>
+  <!-- Bootstrap 5 CSS & FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 40px; }
-    h1 { color: #333; }
-    .card { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-    .bot-name { font-size: 18px; font-weight: bold; color: #2c3e50; }
-    .btn-restart { background: #e74c3c; color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; }
-    .btn-restart:hover { background: #c0392b; }
+    body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .navbar { background-color: #1e293b; border-bottom: 1px solid #334155; }
+    .card-bot { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; transition: all 0.3s ease; }
+    .card-bot:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+    .badge-status { font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; }
+    .status-live { background-color: #059669; color: white; }
+    .status-suspended { background-color: #dc2626; color: white; }
+    .status-building { background-color: #d97706; color: white; }
+    .btn-action { border-radius: 8px; font-weight: 500; font-size: 0.88rem; }
+    .stats-card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 15px; }
   </style>
 </head>
 <body>
 
-  <h1>🤖 Maamulaha Bots-ka ee Render</h1>
-  <div id="bot-list">Soo dejineysa liiska bots-ka...</div>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg mb-4">
+    <div class="container">
+      <a class="navbar-brand text-white fw-bold fs-4" href="#">
+        <i class="fa-solid fa-robot text-primary me-2"></i> Render Bot Manager Pro
+      </a>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-info btn-sm" onclick="getBots()">
+          <i class="fa-solid fa-rotate me-1"></i> Refresh
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Header Stats -->
+    <div class="row mb-4" id="stats-container">
+      <div class="col-md-4 mb-2">
+        <div class="stats-card d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-secondary small d-block">Wadarta Bots-ka</span>
+            <h3 class="fw-bold mb-0" id="total-bots">0</h3>
+          </div>
+          <i class="fa-solid fa-server fs-1 text-primary"></i>
+        </div>
+      </div>
+      <div class="col-md-4 mb-2">
+        <div class="stats-card d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-secondary small d-block">Kuwa Shaqaynaya (Live)</span>
+            <h3 class="fw-bold mb-0 text-success" id="active-bots">0</h3>
+          </div>
+          <i class="fa-solid fa-circle-check fs-1 text-success"></i>
+        </div>
+      </div>
+      <div class="col-md-4 mb-2">
+        <div class="stats-card d-flex align-items-center justify-content-between">
+          <div>
+            <span class="text-secondary small d-block">Kuwa Damsan (Suspended)</span>
+            <h3 class="fw-bold mb-0 text-danger" id="stopped-bots">0</h3>
+          </div>
+          <i class="fa-solid fa-circle-pause fs-1 text-danger"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bots List -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0"><i class="fa-solid fa-list me-2"></i>Liiska Bots-kaaga</h5>
+      <span class="text-muted small" id="last-updated">--</span>
+    </div>
+
+    <div id="bot-list" class="row">
+      <div class="col-12 text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-secondary">Soo dejinaya liiska bots-ka ee Render...</p>
+      </div>
+    </div>
+  </div>
 
   <script>
     async function getBots() {
-      const res = await fetch('/api/services');
-      const data = await res.json();
       const container = document.getElementById('bot-list');
-      container.innerHTML = '';
+      try {
+        const res = await fetch('/api/services');
+        const data = await res.json();
+        container.innerHTML = '';
 
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p>Wax bot ah oo Render ku jira la ma helin.</p>';
-        return;
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="col-12"><div class="alert alert-warning">Wax bot ah ama adeeg ah oo Render ku jira la ma helin.</div></div>';
+          return;
+        }
+
+        let total = data.length;
+        let active = 0;
+        let stopped = 0;
+
+        data.forEach(item => {
+          const bot = item.service;
+          const isSuspended = bot.suspended === 'suspended';
+          
+          if (isSuspended) stopped++;
+          else active++;
+
+          const statusClass = isSuspended ? 'status-suspended' : 'status-live';
+          const statusText = isSuspended ? 'Suspended (Damsan)' : 'Live (Shaqaynaya)';
+
+          const col = document.createElement('div');
+          col.className = 'col-md-6 col-lg-6 mb-3';
+          col.innerHTML = `
+            <div class="card card-bot p-3 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h5 class="fw-bold mb-1 text-white">${bot.name}</h5>
+                    <span class="text-secondary small">ID: ${bot.id}</span>
+                  </div>
+                  <span class="badge badge-status ${statusClass}">${statusText}</span>
+                </div>
+                <div class="mb-3">
+                  <span class="badge bg-dark border border-secondary text-secondary me-1"><i class="fa-solid fa-code-branch me-1"></i>${bot.type}</span>
+                  <span class="badge bg-dark border border-secondary text-secondary"><i class="fa-solid fa-clock me-1"></i>${new Date(bot.updatedAt).toLocaleTimeString()}</span>
+                </div>
+              </div>
+
+              <!-- Badhamada Amarrada -->
+              <div class="d-flex flex-wrap gap-2 pt-2 border-top border-secondary">
+                <button class="btn btn-success btn-action flex-fill" onclick="startBot('${bot.id}')" ${!isSuspended ? 'disabled' : ''}>
+                  <i class="fa-solid fa-play me-1"></i> Shid
+                </button>
+                <button class="btn btn-danger btn-action flex-fill" onclick="stopBot('${bot.id}')" ${isSuspended ? 'disabled' : ''}>
+                  <i class="fa-solid fa-stop me-1"></i> Dami
+                </button>
+                <button class="btn btn-warning btn-action flex-fill text-dark" onclick="restartBot('${bot.id}', false)">
+                  <i class="fa-solid fa-rotate me-1"></i> Restart
+                </button>
+                <button class="btn btn-outline-light btn-action" title="Clear Cache & Deploy" onclick="restartBot('${bot.id}', true)">
+                  <i class="fa-solid fa-broom"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          container.appendChild(col);
+        });
+
+        document.getElementById('total-bots').innerText = total;
+        document.getElementById('active-bots').innerText = active;
+        document.getElementById('stopped-bots').innerText = stopped;
+        document.getElementById('last-updated').innerText = 'Cusboonaaday: ' + new Date().toLocaleTimeString();
+
+      } catch (err) {
+        container.innerHTML = '<div class="col-12"><div class="alert alert-danger">Cillad ayaa ka dhacday soo qaadista xogta Render API.</div></div>';
       }
-
-      data.forEach(item => {
-        const bot = item.service;
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerHTML = `
-          <div>
-            <div class="bot-name">${bot.name}</div>
-            <small>ID: ${bot.id} | Type: ${bot.type}</small>
-          </div>
-          <button class="btn-restart" onclick="restartBot('${bot.id}')">🔄 Dib u Bilow (Restart)</button>
-        `;
-        container.appendChild(div);
-      });
     }
 
-    async function restartBot(serviceId) {
-      if (!confirm('Ma meel dhigtay inaad dib u bilowdo bot-kan?')) return;
-      const res = await fetch(`/api/restart/${serviceId}`, { method: 'POST' });
+    async function startBot(id) {
+      if (!confirm('Ma meel dhigtay inaad SHIDDO bot-kan?')) return;
+      const res = await fetch(`/api/start/${id}`, { method: 'POST' });
+      if (res.ok) {
+        alert('Amargii waa la diray: Bot-kii waa la shidayaa!');
+        getBots();
+      }
+    }
+
+    async function stopBot(id) {
+      if (!confirm('Ma meel dhigtay inaad DAMISO bot-kan?')) return;
+      const res = await fetch(`/api/stop/${id}`, { method: 'POST' });
+      if (res.ok) {
+        alert('Amargii waa la diray: Bot-kii waa la damiyay!');
+        getBots();
+      }
+    }
+
+    async function restartBot(id, clearCache) {
+      const msg = clearCache ? 'Ma meel dhigtay inaad Clear Cache & Restart samayso?' : 'Ma meel dhigtay inaad Dib u bilaabdo (Restart) bot-kan?';
+      if (!confirm(msg)) return;
+      const res = await fetch(`/api/restart/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clearCache })
+      });
       if (res.ok) {
         alert('Bot-ka dib ayaa loo bilaabay!');
-      } else {
-        alert('Cillad ayaa dhacday marka bot-ka dib loo bilaabayay.');
+        getBots();
       }
     }
 
     getBots();
+    // Auto refresh 15-kii ilbiriqsiba
+    setInterval(getBots, 15000);
   </script>
 </body>
 </html>
