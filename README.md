@@ -1,0 +1,2 @@
+# render-bot-manager
+manegar
