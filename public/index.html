@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+  <meta charset="UTF-8">
+  <title>Render Bot Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 40px; }
+    h1 { color: #333; }
+    .card { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+    .bot-name { font-size: 18px; font-weight: bold; color: #2c3e50; }
+    .btn-restart { background: #e74c3c; color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; }
+    .btn-restart:hover { background: #c0392b; }
+  </style>
+</head>
+<body>
+
+  <h1>🤖 Maamulaha Bots-ka ee Render</h1>
+  <div id="bot-list">Soo dejineysa liiska bots-ka...</div>
+
+  <script>
+    async function getBots() {
+      const res = await fetch('/api/services');
+      const data = await res.json();
+      const container = document.getElementById('bot-list');
+      container.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p>Wax bot ah oo Render ku jira la ma helin.</p>';
+        return;
+      }
+
+      data.forEach(item => {
+        const bot = item.service;
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <div>
+            <div class="bot-name">${bot.name}</div>
+            <small>ID: ${bot.id} | Type: ${bot.type}</small>
+          </div>
+          <button class="btn-restart" onclick="restartBot('${bot.id}')">🔄 Dib u Bilow (Restart)</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function restartBot(serviceId) {
+      if (!confirm('Ma meel dhigtay inaad dib u bilowdo bot-kan?')) return;
+      const res = await fetch(`/api/restart/${serviceId}`, { method: 'POST' });
+      if (res.ok) {
+        alert('Bot-ka dib ayaa loo bilaabay!');
+      } else {
+        alert('Cillad ayaa dhacday marka bot-ka dib loo bilaabayay.');
+      }
+    }
+
+    getBots();
+  </script>
+</body>
+</html>

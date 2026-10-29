@@ -1,0 +1,4 @@
+mkdir render-bot-manager
+cd render-bot-manager
+npm init -y
+npm install express dotenv node-fetch
