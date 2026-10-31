@@ -12,99 +12,19 @@
       --bg-dark: #0b0f19;
       --card-bg: #151c2c;
       --border-color: #232d42;
-      --accent-blue: #0d6efd;
     }
-    body {
-      background-color: var(--bg-dark);
-      color: #f8fafc;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow-x: hidden;
-    }
-    /* Sidebar */
-    .sidebar {
-      width: 250px;
-      background-color: #0f172a;
-      border-right: 1px solid var(--border-color);
-      min-height: 100vh;
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 1000;
-      padding-top: 15px;
-    }
-    .sidebar .nav-link {
-      color: #94a3b8;
-      padding: 10px 20px;
-      margin: 2px 10px;
-      border-radius: 8px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active {
-      color: #ffffff;
-      background-color: #1e293b;
-    }
-    .sidebar .nav-link.active {
-      background-color: #2563eb;
-    }
-    /* Main Content */
-    .main-content {
-      margin-left: 250px;
-      padding: 20px;
-    }
-    /* Cards */
-    .custom-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 18px;
-      margin-bottom: 20px;
-    }
-    .stat-card {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-    }
-    .badge-status {
-      font-size: 0.75rem;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-weight: 600;
-    }
+    body { background-color: var(--bg-dark); color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .sidebar { width: 250px; background-color: #0f172a; border-right: 1px solid var(--border-color); min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 1000; padding-top: 15px; }
+    .sidebar .nav-link { color: #94a3b8; padding: 10px 20px; margin: 2px 10px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 12px; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #ffffff; background-color: #2563eb; }
+    .main-content { margin-left: 250px; padding: 20px; }
+    .custom-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+    .badge-status { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
     .badge-running { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
     .badge-stopped { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
-    
-    /* Tables */
-    .table-custom {
-      color: #e2e8f0;
-      vertical-align: middle;
-    }
-    .table-custom th {
-      color: #64748b;
-      font-weight: 600;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 0.85rem;
-    }
-    .table-custom td {
-      border-bottom: 1px solid var(--border-color);
-      padding: 12px 8px;
-    }
-    .form-switch .form-check-input {
-      width: 2.8em;
-      height: 1.4em;
-      cursor: pointer;
-    }
+    .table-custom { color: #e2e8f0; vertical-align: middle; }
+    .table-custom th { color: #64748b; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+    .table-custom td { border-bottom: 1px solid var(--border-color); padding: 12px 8px; }
   </style>
 </head>
 <body>
@@ -115,7 +35,7 @@
       <i class="fa-solid fa-robot text-primary fs-3"></i>
       <div>
         <h6 class="fw-bold mb-0 text-white">Cali Bot Manager</h6>
-        <small class="text-muted" style="font-size: 11px;">Trading Bot Control Panel</small>
+        <small class="text-muted" style="font-size: 11px;">Trading Control Panel</small>
       </div>
     </div>
     <ul class="nav nav-pills flex-column">
@@ -130,87 +50,35 @@
 
   <!-- Main Content -->
   <div class="main-content">
-    
-    <!-- Top Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
       <div>
         <h4 class="fw-bold mb-0">Dashboard</h4>
-        <small class="text-muted">Xakamaynta iyo Maamulka Bot-kaaga (Bybit / Pionex)</small>
+        <small class="text-muted">Maamulka Trading Bots (Bybit / Pionex)</small>
       </div>
       <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-info btn-sm" onclick="fetchBots()"><i class="fa-solid fa-rotate me-1"></i> Refresh</button>
         <span class="badge bg-success-subtle text-success border border-success px-3 py-2">
           <i class="fa-solid fa-circle me-1" style="font-size: 8px;"></i> Server: Online
         </span>
-        <span class="text-muted small"><i class="fa-solid fa-clock me-1"></i> <span id="clock">19:30:25</span></span>
       </div>
     </div>
 
-    <!-- 1. DASHBOARD STATS -->
+    <!-- Stats Section -->
     <div class="row">
-      <div class="col-md-2">
-        <div class="custom-card stat-card">
-          <div>
-            <span class="text-muted small d-block">Total Balance</span>
-            <h5 class="fw-bold mb-0">$156.40</h5>
-            <small class="text-success"><i class="fa-solid fa-caret-up"></i> +3.24%</small>
-          </div>
-          <div class="stat-icon bg-primary bg-opacity-20 text-primary"><i class="fa-solid fa-wallet"></i></div>
-        </div>
-      </div>
-      <div class="col-md-2">
-        <div class="custom-card stat-card">
-          <div>
-            <span class="text-muted small d-block">Daily Profit/Loss</span>
-            <h5 class="fw-bold mb-0 text-success">+$4.92</h5>
-            <small class="text-success"><i class="fa-solid fa-caret-up"></i> +3.24%</small>
-          </div>
-          <div class="stat-icon bg-success bg-opacity-20 text-success"><i class="fa-solid fa-chart-simple"></i></div>
-        </div>
-      </div>
-      <div class="col-md-2">
-        <div class="custom-card stat-card">
-          <div>
-            <span class="text-muted small d-block">Total Trades</span>
-            <h5 class="fw-bold mb-0">12</h5>
-            <small class="text-muted">Win: 10 | Loss: 2</small>
-          </div>
-          <div class="stat-icon bg-info bg-opacity-20 text-info"><i class="fa-solid fa-list-check"></i></div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="custom-card stat-card">
-          <div>
-            <span class="text-muted small d-block">Win Rate</span>
-            <h5 class="fw-bold mb-0 text-warning">83.3%</h5>
-            <small class="text-muted">High accuracy</small>
-          </div>
-          <div class="stat-icon bg-warning bg-opacity-20 text-warning"><i class="fa-solid fa-bullseye"></i></div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="custom-card stat-card">
-          <div>
-            <span class="text-muted small d-block">Active Bots</span>
-            <h5 class="fw-bold mb-0">2 / 3</h5>
-            <small class="text-success">2 Running</small>
-          </div>
-          <div class="stat-icon bg-secondary bg-opacity-20 text-light"><i class="fa-solid fa-microchip"></i></div>
-        </div>
-      </div>
+      <div class="col-md-2"><div class="custom-card"><span class="text-muted small">Total Balance</span><h5 class="fw-bold text-white mb-0" id="total-balance">$156.40</h5></div></div>
+      <div class="col-md-2"><div class="custom-card"><span class="text-muted small">Daily PnL</span><h5 class="fw-bold text-success mb-0">+$4.92</h5></div></div>
+      <div class="col-md-2"><div class="custom-card"><span class="text-muted small">Total Trades</span><h5 class="fw-bold text-white mb-0" id="total-trades">12</h5></div></div>
+      <div class="col-md-3"><div class="custom-card"><span class="text-muted small">Win Rate</span><h5 class="fw-bold text-warning mb-0">83.3%</h5></div></div>
+      <div class="col-md-3"><div class="custom-card"><span class="text-muted small">Active Bots</span><h5 class="fw-bold text-info mb-0" id="active-bots-count">0 / 0</h5></div></div>
     </div>
 
-    <!-- MAIN GRID SECTION -->
     <div class="row">
-      <!-- LEFT SIDE: BOTS MANAGEMENT & LOGS -->
+      <!-- BOTS MANAGEMENT TABLE -->
       <div class="col-lg-8">
-        
-        <!-- 2. BOTS MANAGEMENT -->
-        <div class="custom-card" id="bots">
+        <div class="custom-card">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-bold mb-0"><i class="fa-solid fa-robot text-primary me-2"></i>Bots Management</h6>
-            <button class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> Add New Bot</button>
           </div>
-
           <div class="table-responsive">
             <table class="table table-custom">
               <thead>
@@ -221,186 +89,218 @@
                   <th class="text-end">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <strong class="d-block">Futures Bot</strong>
-                    <small class="text-muted">EMA 5/10/21 (15M)</small>
-                  </td>
-                  <td><span class="badge bg-primary">Bybit</span></td>
-                  <td><span class="badge-status badge-running"><i class="fa-solid fa-circle me-1"></i> RUNNING</span></td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-success" title="Start"><i class="fa-solid fa-play"></i></button>
-                    <button class="btn btn-sm btn-outline-warning" title="Stop"><i class="fa-solid fa-pause"></i></button>
-                    <button class="btn btn-sm btn-outline-info" title="Restart"><i class="fa-solid fa-rotate"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    <button class="btn btn-sm btn-outline-light" title="View Details"><i class="fa-solid fa-eye"></i></button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong class="d-block">Spot Grid Bot</strong>
-                    <small class="text-muted">Grid (1%)</small>
-                  </td>
-                  <td><span class="badge bg-warning text-dark">Pionex</span></td>
-                  <td><span class="badge-status badge-running"><i class="fa-solid fa-circle me-1"></i> RUNNING</span></td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-success" title="Start"><i class="fa-solid fa-play"></i></button>
-                    <button class="btn btn-sm btn-outline-warning" title="Stop"><i class="fa-solid fa-pause"></i></button>
-                    <button class="btn btn-sm btn-outline-info" title="Restart"><i class="fa-solid fa-rotate"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    <button class="btn btn-sm btn-outline-light" title="View Details"><i class="fa-solid fa-eye"></i></button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <strong class="d-block">Scalping Bot</strong>
-                    <small class="text-muted">Bollinger + EMA20</small>
-                  </td>
-                  <td><span class="badge bg-primary">Bybit</span></td>
-                  <td><span class="badge-status badge-stopped"><i class="fa-solid fa-circle me-1"></i> STOPPED</span></td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-success" title="Start"><i class="fa-solid fa-play"></i></button>
-                    <button class="btn btn-sm btn-outline-warning" title="Stop"><i class="fa-solid fa-pause"></i></button>
-                    <button class="btn btn-sm btn-outline-info" title="Restart"><i class="fa-solid fa-rotate"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                    <button class="btn btn-sm btn-outline-light" title="View Details"><i class="fa-solid fa-eye"></i></button>
-                  </td>
-                </tr>
+              <tbody id="bot-table-body">
+                <tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- 6. LOGS & HISTORY -->
+        <!-- LOGS -->
         <div class="custom-card" id="logs">
-          <h6 class="fw-bold mb-3"><i class="fa-solid fa-receipt text-primary me-2"></i>Logs & History</h6>
-          <div class="bg-dark p-3 rounded font-monospace small" style="height: 180px; overflow-y: auto; color: #a3e635;">
-            <div>[19:28:10] [Bybit] Trade Opened: BTCUSDT Long @ $67,200 | SL: $66,500 TP: $68,500</div>
-            <div>[19:25:00] [Pionex] Grid Order Filled: BUY 0.05 ETH @ $2,640</div>
-            <div class="text-danger">[19:20:15] [Error] Trade Rejected: Insufficient Margin on Bybit Account</div>
-            <div class="text-muted">[19:00:00] [System] Bot 'Scalping Bot' STOPPED by User</div>
-            <div class="text-info">[18:30:00] [System] Bot 'Futures Bot' STARTED successfully</div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0"><i class="fa-solid fa-receipt text-primary me-2"></i>Logs & History</h6>
+            <button class="btn btn-sm btn-outline-light" onclick="clearLogs()"><i class="fa-solid fa-broom me-1"></i> Clear</button>
+          </div>
+          <div class="bg-dark p-3 rounded font-monospace small" id="log-console" style="height: 180px; overflow-y: auto; color: #a3e635;">
+            <div>[System] Dashboard initialized. Ready...</div>
           </div>
         </div>
-
       </div>
 
-      <!-- RIGHT SIDE: QUICK CONTROL, SETTINGS, API & SYSTEM -->
+      <!-- RIGHT PANEL: CONTROLS & SETTINGS -->
       <div class="col-lg-4">
-
-        <!-- 3. QUICK CONTROL -->
+        <!-- QUICK CONTROL -->
         <div class="custom-card">
           <h6 class="fw-bold mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i>Quick Control</h6>
           <div class="row g-2">
-            <div class="col-6"><button class="btn btn-success w-100 btn-sm"><i class="fa-solid fa-play me-1"></i> Start All</button></div>
-            <div class="col-6"><button class="btn btn-danger w-100 btn-sm"><i class="fa-solid fa-stop me-1"></i> Stop All</button></div>
-            <div class="col-6"><button class="btn btn-secondary w-100 btn-sm"><i class="fa-solid fa-rotate me-1"></i> Restart All</button></div>
-            <div class="col-6"><button class="btn btn-outline-danger w-100 btn-sm"><i class="fa-solid fa-power-off me-1"></i> Emergency Stop</button></div>
-            <div class="col-6"><button class="btn btn-outline-light w-100 btn-sm"><i class="fa-solid fa-chart-line me-1"></i> Reset Statistics</button></div>
-            <div class="col-6"><button class="btn btn-outline-light w-100 btn-sm"><i class="fa-solid fa-broom me-1"></i> Clear Logs</button></div>
+            <div class="col-6"><button class="btn btn-success w-100 btn-sm" onclick="bulkAction('start')"><i class="fa-solid fa-play me-1"></i> Start All</button></div>
+            <div class="col-6"><button class="btn btn-danger w-100 btn-sm" onclick="bulkAction('stop')"><i class="fa-solid fa-stop me-1"></i> Stop All</button></div>
+            <div class="col-6"><button class="btn btn-secondary w-100 btn-sm" onclick="bulkAction('restart')"><i class="fa-solid fa-rotate me-1"></i> Restart All</button></div>
+            <div class="col-6"><button class="btn btn-outline-danger w-100 btn-sm" onclick="bulkAction('stop')"><i class="fa-solid fa-power-off me-1"></i> Emergency Stop</button></div>
           </div>
         </div>
 
-        <!-- 4. TRADING SETTINGS -->
+        <!-- TRADING SETTINGS FORM -->
         <div class="custom-card" id="settings">
           <h6 class="fw-bold mb-3"><i class="fa-solid fa-sliders text-info me-2"></i>Trading Settings</h6>
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="small">Auto Scan</span>
-            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked></div>
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="small">Auto Trading</span>
-            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked></div>
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="small">Stop Loss (SL)</span>
-            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked></div>
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small">Take Profit (TP)</span>
-            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked></div>
-          </div>
-          
-          <div class="row g-2 mb-2">
-            <div class="col-6">
-              <label class="form-label small mb-1">Max Open Positions</label>
-              <input type="number" class="form-control form-control-sm bg-dark text-white border-secondary" value="3">
+          <form id="settings-form" onsubmit="saveSettings(event)">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small">Auto Scan</span>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="autoScan" checked></div>
             </div>
-            <div class="col-6">
-              <label class="form-label small mb-1">Max Trades Per Scan</label>
-              <input type="number" class="form-control form-control-sm bg-dark text-white border-secondary" value="1">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small">Auto Trading</span>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="autoTrading" checked></div>
             </div>
-          </div>
-          <div class="row g-2">
-            <div class="col-6">
-              <label class="form-label small mb-1">Trading Margin ($)</label>
-              <input type="number" class="form-control form-control-sm bg-dark text-white border-secondary" value="50">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small">Stop Loss (SL)</span>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="stopLoss" checked></div>
             </div>
-            <div class="col-6">
-              <label class="form-label small mb-1">Leverage</label>
-              <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" value="10x">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="small">Take Profit (TP)</span>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="takeProfit" checked></div>
             </div>
-          </div>
-        </div>
 
-        <!-- 5. API & EXCHANGES -->
-        <div class="custom-card" id="api">
-          <h6 class="fw-bold mb-3"><i class="fa-solid fa-link text-primary me-2"></i>API & Exchanges</h6>
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="small"><i class="fa-solid fa-circle text-success me-1" style="font-size: 8px;"></i> Bybit API Connection</span>
-            <button class="btn btn-sm btn-outline-info py-0">Test</button>
-          </div>
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small"><i class="fa-solid fa-circle text-success me-1" style="font-size: 8px;"></i> Pionex API Connection</span>
-            <button class="btn btn-sm btn-outline-info py-0">Test</button>
-          </div>
-          <button class="btn btn-outline-light btn-sm w-100"><i class="fa-solid fa-key me-1"></i> API Key Management</button>
-        </div>
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label small mb-1">Leverage</label>
+                <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="leverage" value="10x">
+              </div>
+              <div class="col-6">
+                <label class="form-label small mb-1">Margin ($)</label>
+                <input type="number" class="form-control form-control-sm bg-dark text-white border-secondary" id="tradingMargin" value="50">
+              </div>
+            </div>
 
-        <!-- 7. SYSTEM MANAGEMENT -->
-        <div class="custom-card" id="system">
-          <h6 class="fw-bold mb-3"><i class="fa-solid fa-server text-success me-2"></i>System Management</h6>
-          <div class="mb-2">
-            <div class="d-flex justify-content-between small mb-1">
-              <span>CPU Usage</span>
-              <span>12%</span>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small mb-1">Scan Interval (min)</label>
+                <input type="number" class="form-control form-control-sm bg-dark text-white border-secondary" id="scanInterval" value="5">
+              </div>
+              <div class="col-6">
+                <label class="form-label small mb-1">Max Positions</label>
+                <input type="number" class="form-control form-control-sm bg-dark text-white border-secondary" id="maxOpenPositions" value="3">
+              </div>
             </div>
-            <div class="progress" style="height: 6px;">
-              <div class="progress-bar bg-success" style="width: 12%"></div>
-            </div>
-          </div>
-          <div class="mb-3">
-            <div class="d-flex justify-content-between small mb-1">
-              <span>RAM Usage</span>
-              <span>38%</span>
-            </div>
-            <div class="progress" style="height: 6px;">
-              <div class="progress-bar bg-info" style="width: 38%"></div>
-            </div>
-          </div>
-          <div class="small text-muted mb-3"><i class="fa-solid fa-clock me-1"></i> Uptime: 2d 14h 20m</div>
-          
-          <div class="d-flex gap-2">
-            <button class="btn btn-outline-light btn-sm flex-fill"><i class="fa-solid fa-download me-1"></i> Backup</button>
-            <button class="btn btn-outline-light btn-sm flex-fill"><i class="fa-solid fa-upload me-1"></i> Restore</button>
-            <button class="btn btn-outline-danger btn-sm flex-fill"><i class="fa-solid fa-rotate me-1"></i> Restart</button>
-          </div>
-        </div>
 
+            <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fa-solid fa-floppy-disk me-1"></i> Save Settings</button>
+          </form>
+        </div>
       </div>
     </div>
-
   </div>
 
   <script>
-    // Real-time clock update
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').innerText = now.toLocaleTimeString();
+    let currentBots = [];
+
+    async function fetchBots() {
+      const tbody = document.getElementById('bot-table-body');
+      try {
+        const res = await fetch('/api/services');
+        const data = await res.json();
+        
+        tbody.innerHTML = '';
+        currentBots = data || [];
+
+        let runningCount = 0;
+        
+        if (currentBots.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Aaladaha bot-ka ee Render ma ma jiraan.</td></tr>';
+          document.getElementById('active-bots-count').innerText = '0 / 0';
+          return;
+        }
+
+        currentBots.forEach(item => {
+          const bot = item.service || item;
+          const isSuspended = bot.suspended === 'suspended';
+          if (!isSuspended) runningCount++;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <strong class="d-block text-white">${bot.name}</strong>
+              <small class="text-muted">ID: ${bot.id}</small>
+            </td>
+            <td><span class="badge bg-primary">Bybit / Pionex</span></td>
+            <td>
+              ${isSuspended 
+                ? '<span class="badge-status badge-stopped"><i class="fa-solid fa-circle me-1"></i> STOPPED</span>' 
+                : '<span class="badge-status badge-running"><i class="fa-solid fa-circle me-1"></i> RUNNING</span>'}
+            </td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-success" onclick="controlBot('${bot.id}', 'start')" ${!isSuspended ? 'disabled' : ''}><i class="fa-solid fa-play"></i></button>
+              <button class="btn btn-sm btn-outline-warning" onclick="controlBot('${bot.id}', 'stop')" ${isSuspended ? 'disabled' : ''}><i class="fa-solid fa-pause"></i></button>
+              <button class="btn btn-sm btn-outline-info" onclick="controlBot('${bot.id}', 'restart')"><i class="fa-solid fa-rotate"></i></button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteBot('${bot.id}', '${bot.name}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('active-bots-count').innerText = `${runningCount} / ${currentBots.length}`;
+
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Cillad ayaa ka dhacday soo qaadista bots-ka.</td></tr>';
+      }
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+
+    async function controlBot(id, action) {
+      addLog(`Sending ${action.toUpperCase()} command for Bot ID: ${id}...`);
+      const res = await fetch(`/api/${action}/${id}`, { method: 'POST' });
+      if (res.ok) {
+        addLog(`Success: Bot ${action.toUpperCase()} process completed.`);
+        fetchBots();
+      } else {
+        addLog(`Error: Could not perform ${action} on Bot ID ${id}.`, true);
+      }
+    }
+
+    async function deleteBot(id, name) {
+      if (!confirm(`Ma meel dhigtay inaad tirtirto (DELETE) bot-ka: ${name}?`)) return;
+      
+      addLog(`Deleting bot ${name}...`);
+      const res = await fetch(`/api/delete/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        addLog(`Bot ${name} is deleted successfully.`);
+        fetchBots();
+      } else {
+        addLog(`Failed to delete Bot ${name}.`, true);
+      }
+    }
+
+    async function bulkAction(action) {
+      if (!confirm(`Ma meel dhigtay inaad ${action.toUpperCase()} ku sameeyso dhammaan bots-ka?`)) return;
+      addLog(`Executing BULK ${action.toUpperCase()}...`);
+      for (const item of currentBots) {
+        const bot = item.service || item;
+        await controlBot(bot.id, action);
+      }
+    }
+
+    async function saveSettings(e) {
+      e.preventDefault();
+      const settings = {
+        autoScan: document.getElementById('autoScan').checked,
+        autoTrading: document.getElementById('autoTrading').checked,
+        stopLoss: document.getElementById('stopLoss').checked,
+        takeProfit: document.getElementById('takeProfit').checked,
+        leverage: document.getElementById('leverage').value,
+        tradingMargin: document.getElementById('tradingMargin').value,
+        scanInterval: document.getElementById('scanInterval').value,
+        maxOpenPositions: document.getElementById('maxOpenPositions').value
+      };
+
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+
+      if (res.ok) {
+        addLog(`Trading Settings Updated: Leverage=${settings.leverage}, Margin=$${settings.tradingMargin}, Interval=${settings.scanInterval}m`);
+        alert('Setimaha trading-ka si guul leh ayaa loo kaydiyay!');
+      } else {
+        addLog('Error saving settings.', true);
+      }
+    }
+
+    function addLog(msg, isError = false) {
+      const console = document.getElementById('log-console');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      if (isError) div.className = 'text-danger';
+      div.innerText = `[${time}] ${msg}`;
+      console.appendChild(div);
+      console.scrollTop = console.scrollHeight;
+    }
+
+    function clearLogs() {
+      document.getElementById('log-console').innerHTML = '<div>[System] Logs cleared.</div>';
+    }
+
+    fetchBots();
+    setInterval(fetchBots, 15000);
   </script>
 </body>
 </html>
