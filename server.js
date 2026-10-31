@@ -15,7 +15,7 @@ const headers = {
   'Content-Type': 'application/json'
 };
 
-// 1. Soo qaad dhammaan adeegyada/bots-ka
+// 1. Soo qaad dhammaan bots-ka / services-ka Render
 app.get('/api/services', async (req, res) => {
   try {
     const response = await fetch(`${BASE_URL}/services?limit=50`, { headers });
@@ -26,20 +26,18 @@ app.get('/api/services', async (req, res) => {
   }
 });
 
-// 2. Restart (Clear Cache ama Normal)
-app.post('/api/restart/:serviceId', async (req, res) => {
+// 2. Shid Bot-ka (Resume / Start)
+app.post('/api/start/:serviceId', async (req, res) => {
   const { serviceId } = req.params;
-  const { clearCache } = req.body;
   try {
-    const response = await fetch(`${BASE_URL}/services/${serviceId}/deploys`, {
+    const response = await fetch(`${BASE_URL}/services/${serviceId}/resume`, {
       method: 'POST',
-      headers: headers,
-      body: JSON.stringify({ clearCache: clearCache ? 'clear' : 'do_not_clear' })
+      headers
     });
     const data = await response.json();
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Cillad ayaa ka dhacday dib-u-bilowga bot-ka' });
+    res.status(500).json({ error: 'Cillad ayaa ka dhacday shididda bot-ka' });
   }
 });
 
@@ -49,7 +47,7 @@ app.post('/api/stop/:serviceId', async (req, res) => {
   try {
     const response = await fetch(`${BASE_URL}/services/${serviceId}/suspend`, {
       method: 'POST',
-      headers: headers
+      headers
     });
     const data = await response.json();
     res.json(data);
@@ -58,22 +56,31 @@ app.post('/api/stop/:serviceId', async (req, res) => {
   }
 });
 
-// 4. Shid Bot-ka (Resume / Start)
-app.post('/api/start/:serviceId', async (req, res) => {
-  const { serviceId } = req.params;
+// 4. Dib u billow Bot-ka (Restart / Clear Cache)
+app.post('/api/restart/:serviceId', async (loopReq, loopRes) => {
+  const { serviceId } = loopReq.params;
+  const { clearCache } = loopReq.body;
   try {
-    const response = await fetch(`${BASE_URL}/services/${serviceId}/resume`, {
+    const response = await fetch(`${BASE_URL}/services/${serviceId}/deploys`, {
       method: 'POST',
-      headers: headers
+      headers,
+      body: JSON.stringify({ clearCache: clearCache ? 'clear' : 'do_not_clear' })
     });
     const data = await response.json();
-    res.json(data);
+    loopRes.json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Cillad ayaa ka dhacday shididda bot-ka' });
+    loopRes.status(500).json({ error: 'Cillad ayaa ka dhacday dib-u-bilowga bot-ka' });
   }
+});
+
+// 5. Quick Control ama Amarrada Guud
+app.post('/api/control', async (req, res) => {
+  const { action } = req.body;
+  // Halkan waxaad ku dari kartaa nidaamka Start All / Stop All haddii loo baahdo
+  res.json({ success: true, message: `Amarka ${action} waa la helay.` });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Website-ka maamulku wuxuu ka shaqeynayaa: http://localhost:${PORT}`);
+  console.log(`Server-ka maamulku wuxuu ka shaqeynayaa: http://localhost:${PORT}`);
 });
