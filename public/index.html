@@ -1,962 +1,319 @@
 <!DOCTYPE html>
-<html lang="so" data-bs-theme="dark">
+<html lang="so">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#070b14">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <title>Cali Bot Manager - Trading Control Panel</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <style>
-    :root {
-      --bg: #070b14;
-      --card: rgba(18, 26, 43, .74);
-      --card-solid: #111a2c;
-      --border: rgba(255, 255, 255, .07);
-      --border-strong: rgba(255, 255, 255, .13);
-      --text: #e8eefb;
-      --muted: #8190ad;
-      --profit: #2dd47a;
-      --loss: #ff5c6c;
-      --warn: #fbbf24;
-      --accent: #4f8cff;
-      --radius: 16px;
-      --nav-h: 68px;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      background:
-        radial-gradient(900px 500px at 90% -8%, rgba(79, 140, 255, .16), transparent 60%),
-        radial-gradient(700px 420px at -5% 105%, rgba(139, 92, 246, .12), transparent 60%),
-        var(--bg);
-      background-attachment: fixed;
-      color: var(--text);
-      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      -webkit-tap-highlight-color: transparent;
-    }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-thumb { background: #243049; border-radius: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render Management Dashboard</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --accent-color: #4f46e5;
+            --accent-hover: #4338ca;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #1f2937;
+        }
 
-    .text-profit { color: var(--profit) !important; }
-    .text-loss { color: var(--loss) !important; }
-    .num { font-variant-numeric: tabular-nums; }
-    .btn { border-radius: 10px; font-weight: 600; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
-    /* ================= Sidebar (desktop) ================= */
-    .sidebar {
-      width: 240px; position: fixed; inset: 0 auto 0 0; z-index: 1000;
-      background: rgba(11, 17, 32, .9); backdrop-filter: blur(14px);
-      border-right: 1px solid var(--border); padding: 20px 12px;
-      display: flex; flex-direction: column;
-    }
-    .brand { display: flex; gap: 12px; align-items: center; padding: 4px 10px 22px; }
-    .brand .logo {
-      width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 19px; color: #fff;
-      background: linear-gradient(135deg, #4f8cff, #8b5cf6); box-shadow: 0 8px 22px rgba(79, 140, 255, .4);
-    }
-    .sidebar .nav-link {
-      color: var(--muted); display: flex; align-items: center; gap: 12px;
-      padding: 11px 14px; border-radius: 12px; font-weight: 600; font-size: .92rem; margin-bottom: 4px; transition: .18s;
-    }
-    .sidebar .nav-link i { width: 18px; text-align: center; }
-    .sidebar .nav-link:hover { color: #fff; background: rgba(255, 255, 255, .05); }
-    .sidebar .nav-link.active {
-      color: #fff; background: linear-gradient(135deg, #2f6bff, #6d4df2);
-      box-shadow: 0 8px 22px rgba(79, 110, 255, .38);
-    }
-    .side-foot { margin-top: auto; padding: 12px 10px 0; font-size: .72rem; color: var(--muted); border-top: 1px solid var(--border); }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
 
-    .main-content { margin-left: 240px; padding: 0 28px 40px; }
-    .page { max-width: 1480px; margin: 0 auto; }
+        .dashboard-container {
+            width: 100%;
+            max-width: 1100px;
+        }
 
-    /* ================= Topbar ================= */
-    .topbar {
-      position: sticky; top: 0; z-index: 900;
-      display: flex; flex-wrap: wrap; gap: 10px 14px; justify-content: space-between; align-items: center;
-      padding: 20px 0 14px; margin-bottom: 6px;
-      background: linear-gradient(to bottom, rgba(7, 11, 20, .94) 65%, rgba(7, 11, 20, 0));
-      backdrop-filter: blur(10px);
-    }
-    .topbar h4 { margin: 0; font-weight: 800; letter-spacing: -.01em; }
-    .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .updated { color: var(--muted); font-size: .76rem; }
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-    .chip {
-      display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 700;
-      padding: 6px 11px; border-radius: 20px; border: 1px solid var(--border-strong); color: var(--muted); background: rgba(255, 255, 255, .03);
-    }
-    .chip i { font-size: 7px; }
-    .chip.ok { color: var(--profit); border-color: rgba(45, 212, 122, .45); background: rgba(45, 212, 122, .1); }
-    .chip.err { color: var(--loss); border-color: rgba(255, 92, 108, .45); background: rgba(255, 92, 108, .1); }
-    .chip.warn { color: var(--warn); border-color: rgba(251, 191, 36, .45); background: rgba(251, 191, 36, .1); }
+        header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    /* ================= Hero + stat cards ================= */
-    .hero {
-      position: relative; overflow: hidden; border-radius: 20px; padding: 22px; height: 100%;
-      background: linear-gradient(135deg, #1d3f95 0%, #312e81 55%, #4c1d95 100%);
-      border: 1px solid rgba(255, 255, 255, .15); box-shadow: 0 18px 50px rgba(40, 60, 150, .38);
-      display: flex; flex-direction: column; justify-content: space-between; min-height: 190px;
-    }
-    .hero::before {
-      content: ""; position: absolute; width: 280px; height: 280px; right: -90px; top: -110px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 255, 255, .22), transparent 65%); pointer-events: none;
-    }
-    .hero-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: rgba(255, 255, 255, .75); }
-    .hero-value { font-size: 2.5rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
-    .hero-sub { font-size: .82rem; color: rgba(255, 255, 255, .72); min-height: 1.2em; }
-    .hero-foot {
-      display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
-      margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, .16);
-    }
-    .hero-pill { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 600; color: rgba(255, 255, 255, .85); }
-    .hero-pill strong { font-size: 1.05rem; color: #fff; }
+        header h1 i {
+            color: var(--accent-color);
+        }
 
-    .stat-card {
-      position: relative; overflow: hidden; height: 100%;
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 15px 16px 13px; backdrop-filter: blur(8px); transition: .2s;
-    }
-    .stat-card::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border-strong); transition: .2s; }
-    .stat-card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
-    .stat-card.pos { border-color: rgba(45, 212, 122, .3); background: linear-gradient(135deg, rgba(45, 212, 122, .11), var(--card) 62%); }
-    .stat-card.pos::after { background: var(--profit); }
-    .stat-card.neg { border-color: rgba(255, 92, 108, .3); background: linear-gradient(135deg, rgba(255, 92, 108, .11), var(--card) 62%); }
-    .stat-card.neg::after { background: var(--loss); }
-    .stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .stat-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; }
-    .stat-icon { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; font-size: .75rem; background: rgba(255, 255, 255, .06); color: var(--muted); }
-    .stat-value { font-size: 1.45rem; font-weight: 800; letter-spacing: -.01em; margin: 2px 0; font-variant-numeric: tabular-nums; }
-    .stat-sub { font-size: .74rem; color: var(--muted); min-height: 1.1em; }
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
 
-    .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; backdrop-filter: blur(8px); }
-    .panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 8px; flex-wrap: wrap; }
-    .panel-head h6 { margin: 0; font-weight: 700; font-size: .95rem; }
+        /* Cards Grid */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
 
-    /* ================= Tables ================= */
-    .table { --bs-table-bg: transparent; --bs-table-color: #e2e8f0; margin-bottom: 0; }
-    .table th { color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); font-weight: 700; white-space: nowrap; }
-    .table td { border-bottom: 1px solid var(--border); padding: 12px 8px; vertical-align: middle; }
-    .table tbody tr:last-child td { border-bottom: 0; }
-    .table tbody tr:hover td { background: rgba(255, 255, 255, .025); }
-    .empty-row { text-align: center; color: var(--muted); padding: 28px 8px !important; }
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-    /* ================= Badges ================= */
-    .badge-status { font-size: .68rem; padding: 5px 11px; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; letter-spacing: .02em; }
-    .badge-status i { font-size: 6px; }
-    .badge-running { background: rgba(45, 212, 122, .14); color: var(--profit); border: 1px solid rgba(45, 212, 122, .5); }
-    .badge-running i { animation: pulse 1.8s infinite; }
-    .badge-stopped { background: rgba(255, 92, 108, .14); color: var(--loss); border: 1px solid rgba(255, 92, 108, .5); }
-    .badge-deploying { background: rgba(251, 191, 36, .14); color: var(--warn); border: 1px solid rgba(251, 191, 36, .5); }
-    .badge-deploying i { animation: pulse 1s infinite; }
-    .badge-failed { background: rgba(255, 92, 108, .24); color: #ffb3bb; border: 1px solid var(--loss); }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
-    .side { font-size: .66rem; font-weight: 800; padding: 4px 10px; border-radius: 7px; letter-spacing: .04em; }
-    .side-long { background: rgba(45, 212, 122, .15); color: var(--profit); }
-    .side-short { background: rgba(255, 92, 108, .15); color: var(--loss); }
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--accent-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+        }
 
-    /* ================= Views ================= */
-    .view { display: none; }
-    .view.active { display: block; animation: fade .25s ease; }
-    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .card-info h3 {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
 
-    .chart-wrap { position: relative; height: 300px; }
-    .chart-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: .9rem; }
+        .card-info p {
+            font-size: 18px;
+            font-weight: 700;
+        }
 
-    .console {
-      background: #060a12; border: 1px solid var(--border); border-radius: 12px; padding: 12px;
-      font-family: ui-monospace, 'JetBrains Mono', Menlo, Consolas, monospace; font-size: .76rem; line-height: 1.55;
-      overflow: auto; white-space: pre-wrap; word-break: break-word;
-    }
-    .activity-console { height: 60vh; min-height: 300px; max-height: 560px; }
-    .logs-console { height: 62vh; border: 0; border-radius: 0; margin: 0; }
-    .log-ok { color: #a3e635; }
-    .log-err { color: #ff8b97; }
-    .log-warn { color: #fcd34d; }
-    .log-line { color: #cbd5e1; }
+        /* Action Commands Panel */
+        .commands-panel {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 25px;
+        }
 
-    .bot-mini { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 10px; }
-    .bot-mini:last-child { border-bottom: 0; padding-bottom: 2px; }
-    .bot-mini strong { font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .commands-panel h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-weight: 500; }
-    .form-switch .form-check-input { width: 2.7em; height: 1.45em; cursor: pointer; }
-    .form-control { background: #0b1220; border-color: var(--border-strong); color: #fff; border-radius: 10px; }
-    .form-control:focus { background: #0b1220; color: #fff; border-color: var(--accent); box-shadow: 0 0 0 .2rem rgba(79, 140, 255, .22); }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-    /* ================= Toasts ================= */
-    #toasts { position: fixed; top: 16px; right: 16px; z-index: 3000; display: flex; flex-direction: column; gap: 8px; }
-    .app-toast {
-      min-width: 240px; max-width: 360px; padding: 12px 16px; border-radius: 12px; font-size: .85rem; font-weight: 500;
-      background: #0f1a2e; border: 1px solid var(--border-strong); border-left: 4px solid var(--profit);
-      box-shadow: 0 12px 34px rgba(0, 0, 0, .5); transition: .35s;
-    }
-    .app-toast.danger { border-left-color: var(--loss); }
-    .app-toast.warning { border-left-color: var(--warn); }
-    .app-toast.hide { opacity: 0; transform: translateX(20px); }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            color: white;
+            font-size: 14px;
+        }
 
-    .modal-content { background: var(--card-solid); border: 1px solid var(--border-strong); border-radius: 18px; }
-    .modal-header { border-color: var(--border); }
+        .btn-deploy { background-color: var(--accent-color); }
+        .btn-deploy:hover { background-color: var(--accent-hover); }
 
-    /* ================= Tablet + mobile: bottom navigation ================= */
-    @media (max-width: 991.98px) {
-      .sidebar {
-        inset: auto 10px calc(10px + env(safe-area-inset-bottom)) 10px; width: auto; height: var(--nav-h);
-        flex-direction: row; padding: 6px; border: 1px solid var(--border-strong); border-radius: 22px;
-        background: rgba(14, 20, 34, .9); box-shadow: 0 14px 40px rgba(0, 0, 0, .6);
-      }
-      .brand, .side-foot { display: none; }
-      .sidebar .nav { flex-direction: row !important; width: 100%; flex-wrap: nowrap; gap: 4px; }
-      .sidebar .nav-link {
-        flex: 1; flex-direction: column; justify-content: center; gap: 4px; text-align: center;
-        font-size: .64rem; margin: 0; padding: 6px 2px; border-radius: 16px;
-      }
-      .sidebar .nav-link i { font-size: 1.05rem; width: auto; }
-      .main-content { margin-left: 0; padding: 0 14px calc(var(--nav-h) + 36px + env(safe-area-inset-bottom)); }
-      .topbar { padding-top: calc(14px + env(safe-area-inset-top)); }
-    }
+        .btn-restart { background-color: var(--warning-color); color: #000; }
+        .btn-restart:hover { filter: brightness(0.9); }
 
-    /* ================= Mobile ================= */
-    @media (max-width: 767.98px) {
-      .topbar h4 { font-size: 1.2rem; }
-      .hero { padding: 18px; min-height: 0; }
-      .hero-value { font-size: 2.1rem; }
-      .stat-card { padding: 13px 14px 11px; }
-      .stat-value { font-size: 1.2rem; }
-      .panel { padding: 14px; }
-      .chart-wrap { height: 220px; }
-      #toasts { left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); }
-      .app-toast { max-width: none; }
-      .btn-sm { min-height: 40px; padding: .45rem .8rem; font-size: .85rem; }
-      .form-control, .form-control-sm { font-size: 16px; min-height: 44px; }
-      .logs-console { height: calc(100dvh - 64px); }
-      .setting-row { padding: 14px 0; }
+        .btn-suspend { background-color: var(--danger-color); }
+        .btn-suspend:hover { filter: brightness(0.9); }
 
-      /* Jadwallada -> kaararka */
-      .rtable, .rtable tbody { display: block; }
-      .rtable thead { display: none; }
-      .rtable tbody tr {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; padding: 14px; margin-bottom: 10px;
-        background: rgba(255, 255, 255, .035); border: 1px solid var(--border); border-radius: 14px;
-      }
-      .rtable tbody tr:last-child { margin-bottom: 0; }
-      .rtable tbody td {
-        display: flex; flex-direction: column; gap: 2px; padding: 0 !important; border: 0 !important;
-        order: 5; min-width: 0; background: none !important;
-      }
-      .rtable td[data-label]::before {
-        content: attr(data-label); font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-weight: 700;
-      }
-      .rtable td.span2 { grid-column: 1 / -1; }
-      .rtable td.o1 { order: 1; }
-      .rtable td.o2 { order: 2; }
-      .rtable td.o3 { order: 3; }
-      .rtable td.o4 { order: 4; }
-      .rtable td.end { align-items: flex-end; text-align: right; }
-      .rtable td.c-pnl { font-size: 1.15rem; }
-      .rtable td.c-actions { flex-direction: row; gap: 8px; }
-      .rtable td.c-actions .btn { flex: 1; min-height: 44px; }
-      .rtable td.empty-row { display: block; grid-column: 1 / -1; text-align: center; order: 1; padding: 12px 0 !important; }
-      .table-responsive { overflow: visible; }
-    }
-  </style>
+        .btn-resume { background-color: var(--success-color); }
+        .btn-resume:hover { filter: brightness(0.9); }
+
+        /* Terminal Console */
+        .terminal-panel {
+            background-color: #070a11;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-logs {
+            height: 200px;
+            overflow-y: auto;
+            font-size: 13px;
+            color: #38bdf8;
+            line-height: 1.6;
+        }
+
+        .log-entry { margin-bottom: 4px; }
+        .log-entry.success { color: var(--success-color); }
+        .log-entry.error { color: var(--danger-color); }
+    </style>
 </head>
 <body>
 
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo"><i class="fa-solid fa-robot"></i></div>
-      <div>
-        <div class="fw-bold text-white">Cali Bot Manager</div>
-        <small class="text-muted" style="font-size: 11px;">Trading Control Panel</small>
-      </div>
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <header>
+        <h1><i class="fa-solid fa-server"></i> Render Control Center</h1>
+        <div class="status-badge" id="statusBadge">
+            <i class="fa-solid fa-circle-dot"></i> <span id="statusText">Checking Status...</span>
+        </div>
+    </header>
+
+    <!-- Cards Grid -->
+    <div class="grid-cards">
+        <div class="card">
+            <div class="card-icon"><i class="fa-solid fa-cube"></i></div>
+            <div class="card-info">
+                <h3>Service Name</h3>
+                <p id="serviceName">Bybit Trading Bot</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-icon"><i class="fa-solid fa-globe"></i></div>
+            <div class="card-info">
+                <h3>Region</h3>
+                <p id="serviceRegion">Frankfurt (EU)</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-icon"><i class="fa-solid fa-rotate"></i></div>
+            <div class="card-info">
+                <h3>Auto Deploy</h3>
+                <p id="autoDeploy">Enabled</p>
+            </div>
+        </div>
     </div>
-    <nav class="nav flex-column" id="main-nav">
-      <a href="#dashboard" class="nav-link active" data-view="dashboard"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
-      <a href="#bots" class="nav-link" data-view="bots"><i class="fa-solid fa-robot"></i><span>Bots</span></a>
-      <a href="#trades" class="nav-link" data-view="trades"><i class="fa-solid fa-clock-rotate-left"></i><span>Trades</span></a>
-      <a href="#settings" class="nav-link" data-view="settings"><i class="fa-solid fa-sliders"></i><span>Settings</span></a>
-      <a href="#activity" class="nav-link" data-view="activity"><i class="fa-solid fa-receipt"></i><span>Logs</span></a>
-    </nav>
-    <div class="side-foot">Render + Bybit · v2</div>
-  </aside>
 
-  <main class="main-content">
-    <div class="page">
-      <div class="topbar">
-        <div>
-          <h4 id="page-title">Dashboard</h4>
-          <div class="updated"><span class="d-none d-sm-inline">Maamulka Trading Bots · </span><span id="last-update">--</span></div>
+    <!-- Commands Section -->
+    <div class="commands-panel">
+        <h2><i class="fa-solid fa-terminal"></i> Render Executable Commands</h2>
+        <div class="btn-group">
+            <button class="btn btn-deploy" onclick="sendCommand('deploy')">
+                <i class="fa-solid fa-rocket"></i> Manual Deploy
+            </button>
+            <button class="btn btn-restart" onclick="sendCommand('restart')">
+                <i class="fa-solid fa-arrows-rotate"></i> Restart Service
+            </button>
+            <button class="btn btn-suspend" onclick="sendCommand('suspend')">
+                <i class="fa-solid fa-pause"></i> Suspend Service
+            </button>
+            <button class="btn btn-resume" onclick="sendCommand('resume')">
+                <i class="fa-solid fa-play"></i> Resume Service
+            </button>
         </div>
-        <div class="topbar-right">
-          <span class="chip" id="chip-render"><i class="fa-solid fa-circle"></i> Render</span>
-          <span class="chip" id="chip-bybit"><i class="fa-solid fa-circle"></i> Bybit</span>
-          <button class="btn btn-outline-info btn-sm" id="btn-refresh" title="Refresh"><i class="fa-solid fa-rotate" id="refresh-icon"></i><span class="d-none d-md-inline ms-1">Refresh</span></button>
-        </div>
-      </div>
-
-      <!-- ================= DASHBOARD ================= -->
-      <section id="view-dashboard" class="view active">
-        <div id="account-alert" class="alert alert-warning py-2 small d-none"></div>
-
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-xl-4">
-            <div class="hero">
-              <div>
-                <div class="hero-label"><i class="fa-solid fa-wallet me-1"></i> Total Equity</div>
-                <div class="hero-value" id="st-equity">--</div>
-                <div class="hero-sub" id="st-equity-sub">&nbsp;</div>
-              </div>
-              <div class="hero-foot">
-                <span class="hero-pill"><i class="fa-solid fa-robot"></i> Active Bots <strong id="st-bots">--</strong></span>
-                <small class="hero-sub" id="st-bots-sub">&nbsp;</small>
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-xl-8">
-            <div class="row g-3 h-100">
-              <div class="col-6">
-                <div class="stat-card">
-                  <div class="stat-top"><span class="stat-label">Unrealized P/L</span><span class="stat-icon"><i class="fa-solid fa-wave-square"></i></span></div>
-                  <div class="stat-value" id="st-unreal">--</div><div class="stat-sub" id="st-unreal-sub">&nbsp;</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="stat-card">
-                  <div class="stat-top"><span class="stat-label">Today P/L</span><span class="stat-icon"><i class="fa-solid fa-sun"></i></span></div>
-                  <div class="stat-value" id="st-today">--</div><div class="stat-sub" id="st-today-sub">&nbsp;</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="stat-card">
-                  <div class="stat-top"><span class="stat-label">7 Days P/L</span><span class="stat-icon"><i class="fa-solid fa-calendar-week"></i></span></div>
-                  <div class="stat-value" id="st-week">--</div><div class="stat-sub" id="st-week-sub">&nbsp;</div>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="stat-card">
-                  <div class="stat-top"><span class="stat-label">Win Rate</span><span class="stat-icon"><i class="fa-solid fa-bullseye"></i></span></div>
-                  <div class="stat-value" id="st-win">--</div><div class="stat-sub" id="st-win-sub">&nbsp;</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row g-3">
-          <div class="col-xl-8 order-2 order-xl-1">
-            <div class="panel mb-3">
-              <div class="panel-head">
-                <h6><i class="fa-solid fa-chart-area text-primary me-2"></i>Realized P/L (7 maalmood)</h6>
-                <span class="small fw-bold num" id="chart-total"></span>
-              </div>
-              <div class="chart-wrap">
-                <canvas id="pnl-chart"></canvas>
-                <div class="chart-empty" id="chart-empty">Wali ma jiraan trades xidhan</div>
-              </div>
-            </div>
-
-            <div class="panel">
-              <div class="panel-head">
-                <h6><i class="fa-solid fa-layer-group text-warning me-2"></i>Open Positions <span class="badge bg-secondary ms-1" id="pos-count">0</span></h6>
-              </div>
-              <div class="table-responsive">
-                <table class="table rtable">
-                  <thead><tr><th>Symbol</th><th>Side</th><th>Size</th><th>Entry</th><th>Mark</th><th>P/L</th><th>SL</th><th>TP</th><th>Lev</th></tr></thead>
-                  <tbody id="positions-body"><tr><td colspan="9" class="empty-row">Loading...</td></tr></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-xl-4 order-1 order-xl-2">
-            <div class="panel mb-3">
-              <h6 class="fw-bold mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i>Quick Control</h6>
-              <div class="row g-2">
-                <div class="col-6"><button class="btn btn-success w-100 btn-sm" data-bulk="start"><i class="fa-solid fa-play me-1"></i> Start All</button></div>
-                <div class="col-6"><button class="btn btn-danger w-100 btn-sm" data-bulk="stop"><i class="fa-solid fa-stop me-1"></i> Stop All</button></div>
-                <div class="col-6"><button class="btn btn-secondary w-100 btn-sm" data-bulk="restart"><i class="fa-solid fa-rotate me-1"></i> Restart All</button></div>
-                <div class="col-6"><button class="btn btn-outline-danger w-100 btn-sm" data-bulk="emergency"><i class="fa-solid fa-power-off me-1"></i> Emergency</button></div>
-              </div>
-            </div>
-
-            <div class="panel">
-              <h6 class="fw-bold mb-2"><i class="fa-solid fa-robot text-primary me-2"></i>Bots Status</h6>
-              <div id="bots-compact"><div class="text-muted small py-3 text-center">Loading...</div></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= BOTS ================= -->
-      <section id="view-bots" class="view">
-        <div class="panel">
-          <div class="panel-head">
-            <h6><i class="fa-solid fa-robot text-primary me-2"></i>Bots Management</h6>
-            <div class="d-flex gap-2">
-              <button class="btn btn-success btn-sm" data-bulk="start"><i class="fa-solid fa-play me-1"></i> Start All</button>
-              <button class="btn btn-danger btn-sm" data-bulk="stop"><i class="fa-solid fa-stop me-1"></i> Stop All</button>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="table rtable">
-              <thead><tr><th>Bot Name</th><th>Type</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
-              <tbody id="bots-body"><tr><td colspan="4" class="empty-row"><div class="spinner-border spinner-border-sm text-primary"></div></td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= TRADES ================= -->
-      <section id="view-trades" class="view">
-        <div class="panel">
-          <div class="panel-head">
-            <h6><i class="fa-solid fa-clock-rotate-left text-info me-2"></i>Closed Trades (7 maalmood)</h6>
-            <span class="small text-muted num" id="trades-summary"></span>
-          </div>
-          <div class="table-responsive">
-            <table class="table rtable">
-              <thead><tr><th>Time</th><th>Symbol</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Lev</th><th class="text-end">P/L</th></tr></thead>
-              <tbody id="trades-body"><tr><td colspan="7" class="empty-row">Loading...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= SETTINGS ================= -->
-      <section id="view-settings" class="view">
-        <div class="row">
-          <div class="col-lg-6">
-            <div class="panel">
-              <h6 class="fw-bold mb-2"><i class="fa-solid fa-sliders text-info me-2"></i>Trading Settings</h6>
-              <form id="settings-form">
-                <div class="setting-row"><span>Auto Scan</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="autoScan" checked></div></div>
-                <div class="setting-row"><span>Auto Trading</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="autoTrading" checked></div></div>
-                <div class="setting-row"><span>Stop Loss (SL)</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="stopLoss" checked></div></div>
-                <div class="setting-row mb-2" style="border-bottom: 0;"><span>Take Profit (TP)</span><div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="takeProfit" checked></div></div>
-
-                <div class="row g-3 mb-3">
-                  <div class="col-6"><label class="form-label small text-muted mb-1">Leverage</label><input type="text" class="form-control form-control-sm" id="leverage" value="10x"></div>
-                  <div class="col-6"><label class="form-label small text-muted mb-1">Margin ($)</label><input type="number" inputmode="decimal" class="form-control form-control-sm" id="tradingMargin" value="50"></div>
-                  <div class="col-6"><label class="form-label small text-muted mb-1">Scan Interval (min)</label><input type="number" inputmode="numeric" class="form-control form-control-sm" id="scanInterval" value="5"></div>
-                  <div class="col-6"><label class="form-label small text-muted mb-1">Max Positions</label><input type="number" inputmode="numeric" class="form-control form-control-sm" id="maxOpenPositions" value="3"></div>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-floppy-disk me-1"></i> Save Settings</button>
-                <div class="small text-muted mt-2">Setimahan waxaa lagu kaydiyaa server-ka (settings.json). Bot-ku wuxuu isticmaali karaa oo kaliya haddii koodhkiisa uu akhriyo.</div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= ACTIVITY LOG ================= -->
-      <section id="view-activity" class="view">
-        <div class="panel">
-          <div class="panel-head">
-            <h6><i class="fa-solid fa-receipt text-primary me-2"></i>Logs & History (dashboard)</h6>
-            <button class="btn btn-sm btn-outline-light" id="btn-clear-logs"><i class="fa-solid fa-broom me-1"></i> Clear</button>
-          </div>
-          <div class="console activity-console" id="log-console"><div class="log-ok">[System] Dashboard initialized. Ready...</div></div>
-        </div>
-      </section>
     </div>
-  </main>
 
-  <!-- Bot logs modal -->
-  <div class="modal fade" id="logsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-md-down">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h6 class="modal-title"><i class="fa-solid fa-terminal me-2 text-info"></i><span id="logs-title"></span></h6>
-          <div class="form-check form-switch ms-auto me-3 mb-0"><input class="form-check-input" type="checkbox" id="logs-auto" checked><label class="form-check-label small" for="logs-auto">Auto</label></div>
-          <button class="btn btn-sm btn-outline-info me-2" id="logs-refresh"><i class="fa-solid fa-rotate"></i></button>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Console / Terminal Panel -->
+    <div class="terminal-panel">
+        <div class="terminal-header">
+            <span><i class="fa-solid fa-code"></i> Live Output Console</span>
+            <span id="currentTime"></span>
         </div>
-        <div class="modal-body p-0">
-          <div class="console logs-console" id="logs-body">Loading...</div>
+        <div class="terminal-logs" id="logsContainer">
+            <div class="log-entry">[System] Render Dashboard Ready. Monitoring API...</div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <div id="toasts"></div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const state = { bots: [], account: null, busy: new Set() };
+<script>
+    const logsContainer = document.getElementById('logsContainer');
 
-    /* ---------- Helpers ---------- */
-    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const num = (v) => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
-    const fmt = (n, d = 2) => num(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
-    const money = (n) => `${n < 0 ? '-' : ''}$${fmt(Math.abs(n))}`;
-    const signed = (n) => `${n < 0 ? '-' : '+'}$${fmt(Math.abs(n))}`;
-    const pnlClass = (n) => (n > 0 ? 'text-profit' : n < 0 ? 'text-loss' : 'text-muted');
-    const price = (v) => { const n = num(v); return n ? n.toLocaleString('en-US', { maximumFractionDigits: n < 1 ? 6 : 4 }) : '--'; };
-    const qty = (v) => num(v).toLocaleString('en-US', { maximumFractionDigits: 6 });
-    const sum = (arr) => arr.reduce((a, b) => a + b, 0);
-    const emptyRow = (cols, text) => `<tr><td colspan="${cols}" class="empty-row">${esc(text)}</td></tr>`;
-
-    async function api(url, options = {}) {
-      const res = await fetch(url, options);
-      let data = null;
-      try { data = await res.json(); } catch (_) {}
-      if (!res.ok) throw new Error(data?.error || data?.message || `HTTP ${res.status}`);
-      return data;
+    function addLog(msg, type = 'info') {
+        const div = document.createElement('div');
+        div.className = `log-entry ${type}`;
+        const time = new Date().toLocaleTimeString();
+        div.innerText = `[${time}] ${msg}`;
+        logsContainer.appendChild(div);
+        logsContainer.scrollTop = logsContainer.scrollHeight;
     }
 
-    function toast(msg, type = 'success') {
-      const el = document.createElement('div');
-      el.className = `app-toast ${type}`;
-      el.textContent = msg;
-      $('toasts').appendChild(el);
-      setTimeout(() => el.classList.add('hide'), 3200);
-      setTimeout(() => el.remove(), 3700);
-    }
-
-    function addLog(msg, isError = false) {
-      const box = $('log-console');
-      const div = document.createElement('div');
-      div.className = isError ? 'log-err' : 'log-ok';
-      div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function setChip(name, status, msg) {
-      const el = $('chip-' + name);
-      el.className = 'chip ' + status;
-      el.title = msg || '';
-    }
-
-    /* ---------- Navigation ---------- */
-    const titles = { dashboard: 'Dashboard', bots: 'Bots Management', trades: 'Trades History', settings: 'Trading Settings', activity: 'Logs & History' };
-
-    function showView(name) {
-      if (!titles[name]) name = 'dashboard';
-      document.querySelectorAll('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-' + name));
-      document.querySelectorAll('#main-nav .nav-link').forEach((a) => a.classList.toggle('active', a.dataset.view === name));
-      $('page-title').textContent = titles[name];
-      history.replaceState(null, '', '#' + name);
-      window.scrollTo(0, 0);
-      if (name === 'dashboard' && chart) chart.resize();
-    }
-
-    document.querySelectorAll('#main-nav .nav-link').forEach((a) =>
-      a.addEventListener('click', (e) => { e.preventDefault(); showView(a.dataset.view); })
-    );
-
-    /* ---------- Bots ---------- */
-    function statusBadge(bot) {
-      const map = {
-        running: ['badge-running', 'RUNNING'],
-        stopped: ['badge-stopped', 'STOPPED'],
-        deploying: ['badge-deploying', 'DEPLOYING'],
-        failed: ['badge-failed', 'FAILED']
-      };
-      const [cls, label] = map[bot.status] || map.running;
-      return `<span class="badge-status ${cls}"><i class="fa-solid fa-circle"></i>${label}</span>`;
-    }
-
-    function renderBots() {
-      const bots = state.bots;
-
-      // Full table (desktop) / cards (mobile)
-      if (!bots.length) {
-        $('bots-body').innerHTML = emptyRow(4, 'Aaladaha bot-ka ee Render ma jiraan.');
-      } else {
-        $('bots-body').innerHTML = bots.map((bot) => {
-          const busy = state.busy.has(bot.id);
-          const id = esc(bot.id);
-          return `<tr>
-            <td class="span2 o1"><strong class="d-block text-white">${esc(bot.name)}</strong><small class="text-muted">ID: ${id}</small></td>
-            <td class="o2" data-label="Type"><span class="badge bg-primary-subtle text-primary-emphasis">${esc((bot.type || '').replace(/_/g, ' '))}</span></td>
-            <td class="o3 end" data-label="Status">${busy ? '<span class="spinner-border spinner-border-sm text-info"></span>' : statusBadge(bot)}</td>
-            <td class="c-actions span2 o4 text-end text-nowrap">
-              <button class="btn btn-sm btn-outline-success" title="Start" data-action="start" data-id="${id}" ${busy || !bot.suspended ? 'disabled' : ''}><i class="fa-solid fa-play"></i></button>
-              <button class="btn btn-sm btn-outline-warning" title="Stop" data-action="stop" data-id="${id}" ${busy || bot.suspended ? 'disabled' : ''}><i class="fa-solid fa-pause"></i></button>
-              <button class="btn btn-sm btn-outline-info" title="Restart" data-action="restart" data-id="${id}" ${busy ? 'disabled' : ''}><i class="fa-solid fa-rotate"></i></button>
-              <button class="btn btn-sm btn-outline-secondary" title="Logs" data-action="logs" data-id="${id}"><i class="fa-solid fa-terminal"></i></button>
-              <button class="btn btn-sm btn-outline-danger" title="Delete" data-action="delete" data-id="${id}" ${busy ? 'disabled' : ''}><i class="fa-solid fa-trash"></i></button>
-            </td>
-          </tr>`;
-        }).join('');
-      }
-
-      // Compact list (dashboard)
-      $('bots-compact').innerHTML = bots.length
-        ? bots.map((b) => `<div class="bot-mini"><strong>${esc(b.name)}</strong>${statusBadge(b)}</div>`).join('')
-        : '<div class="text-muted small py-3 text-center">Bot ma jiro</div>';
-
-      renderStats();
-    }
-
-    async function loadBots() {
-      try {
-        state.bots = await api('/api/services');
-        setChip('render', 'ok', 'Render API waa shaqaynayaa');
-      } catch (err) {
-        setChip('render', 'err', err.message);
-        $('bots-body').innerHTML = emptyRow(4, 'Cillad: ' + err.message);
-        $('bots-compact').innerHTML = `<div class="text-danger small py-3 text-center">${esc(err.message)}</div>`;
-        return;
-      }
-      renderBots();
-    }
-
-    async function controlBot(id, action) {
-      const bot = state.bots.find((b) => b.id === id);
-      const name = bot ? bot.name : id;
-      state.busy.add(id);
-      renderBots();
-      try {
-        await api(`/api/${action}/${id}`, { method: action === 'delete' ? 'DELETE' : 'POST' });
-        addLog(`${action.toUpperCase()} OK → ${name}`);
-        return true;
-      } catch (err) {
-        addLog(`${action.toUpperCase()} FAILED → ${name}: ${err.message}`, true);
-        toast(`${name}: ${err.message}`, 'danger');
-        return false;
-      } finally {
-        state.busy.delete(id);
-      }
-    }
-
-    async function handleBotAction(action, id) {
-      const bot = state.bots.find((b) => b.id === id);
-      if (!bot) return;
-      if (action === 'logs') return openLogs(bot);
-      if (action === 'delete' && !confirm(`Ma hubtaa inaad TIRTIRTO (DELETE) bot-ka: ${bot.name}? Tani dib looma celin karo.`)) return;
-
-      const ok = await controlBot(id, action);
-      if (ok) toast(`${bot.name}: ${action.toUpperCase()} si guul leh ayuu u dhacay`);
-      await loadBots();
-      setTimeout(loadBots, 4000); // Render wuxuu u baahan yahay in yar si xaaladda u cusboonaysiiso
-    }
-
-    async function bulkAction(kind) {
-      const emergency = kind === 'emergency';
-      const action = emergency ? 'stop' : kind;
-      const targets = state.bots.filter((b) => (action === 'start' ? b.suspended : !b.suspended));
-      if (!targets.length) return toast('Wax bot ah oo arrintan lagu sameeyo ma jiro', 'warning');
-
-      const msg = emergency
-        ? `EMERGENCY STOP: ${targets.length} bot ayaa la damin doonaa.\nPositions-ka furan ma xidhmayaan, Bybit ayaa ku sii jiri doona.\nMa sii wadaa?`
-        : `Ma hubtaa inaad ${action.toUpperCase()} ku sameyso ${targets.length} bot?`;
-      if (!confirm(msg)) return;
-
-      addLog(`BULK ${kind.toUpperCase()} (${targets.length} bots)...`);
-      let ok = 0;
-      for (const bot of targets) {
-        if (await controlBot(bot.id, action)) ok++;
-      }
-      toast(`${ok} / ${targets.length} bot si guul leh ayaa loo sameeyay`, ok === targets.length ? 'success' : 'warning');
-      await loadBots();
-      setTimeout(loadBots, 4000);
-    }
-
-    document.addEventListener('click', (e) => {
-      const actionBtn = e.target.closest('[data-action]');
-      if (actionBtn) return handleBotAction(actionBtn.dataset.action, actionBtn.dataset.id);
-      const bulkBtn = e.target.closest('[data-bulk]');
-      if (bulkBtn) return bulkAction(bulkBtn.dataset.bulk);
-    });
-
-    /* ---------- Account / P&L ---------- */
-    async function loadAccount() {
-      try {
-        const data = await api('/api/account');
-        state.account = data;
-        if (data.configured === false) setChip('bybit', 'warn', data.errors[0]);
-        else if (data.errors && data.errors.length) setChip('bybit', 'err', data.errors.join(' | '));
-        else setChip('bybit', 'ok', 'Bybit API waa shaqaynayaa');
-      } catch (err) {
-        state.account = null;
-        setChip('bybit', 'err', err.message);
-      }
-      $('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
-      renderAccount();
-    }
-
-    function setValue(id, value) {
-      const el = $(id);
-      el.textContent = signed(value);
-      el.className = 'stat-value num ' + pnlClass(value);
-      const card = el.closest('.stat-card');
-      if (card) {
-        card.classList.toggle('pos', value > 0);
-        card.classList.toggle('neg', value < 0);
-      }
-    }
-
-    function renderStats() {
-      const running = state.bots.filter((b) => !b.suspended).length;
-      $('st-bots').textContent = state.bots.length ? `${running} / ${state.bots.length}` : '--';
-      const failed = state.bots.filter((b) => b.status === 'failed').length;
-      $('st-bots-sub').textContent = failed ? `${failed} failed` : ' ';
-
-      const a = state.account;
-      if (!a || a.configured === false) return;
-
-      const trades = a.trades || [];
-      const positions = a.positions || [];
-      const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
-      const today = trades.filter((t) => t.time >= startOfDay.getTime());
-
-      if (a.balance) {
-        $('st-equity').textContent = money(a.balance.equity);
-        $('st-equity-sub').textContent = `Available: ${money(a.balance.available)}`;
-      }
-
-      const unreal = positions.length ? sum(positions.map((p) => p.pnl)) : (a.balance ? a.balance.unrealisedPnl : 0);
-      setValue('st-unreal', unreal);
-      $('st-unreal-sub').textContent = `${positions.length} open`;
-
-      setValue('st-today', sum(today.map((t) => t.pnl)));
-      $('st-today-sub').textContent = `${today.length} trades`;
-
-      setValue('st-week', sum(trades.map((t) => t.pnl)));
-      $('st-week-sub').textContent = `${trades.length} trades`;
-
-      const wins = trades.filter((t) => t.pnl > 0).length;
-      const losses = trades.filter((t) => t.pnl < 0).length;
-      $('st-win').textContent = trades.length ? `${fmt((wins / trades.length) * 100, 1)}%` : '--';
-      $('st-win').className = 'stat-value num ' + (trades.length ? (wins / trades.length >= 0.5 ? 'text-profit' : 'text-loss') : '');
-      $('st-win-sub').textContent = `${wins}W / ${losses}L`;
-    }
-
-    function renderPositions() {
-      const a = state.account;
-      const body = $('positions-body');
-      if (!a) { $('pos-count').textContent = '0'; body.innerHTML = emptyRow(9, 'Xogta Bybit lama helin'); return; }
-      if (a.configured === false) { body.innerHTML = emptyRow(9, a.errors[0]); return; }
-
-      const list = a.positions || [];
-      $('pos-count').textContent = list.length;
-      if (!list.length) { body.innerHTML = emptyRow(9, 'Ma jiro position furan'); return; }
-
-      body.innerHTML = list.map((p) => `<tr>
-        <td class="o1"><strong>${esc(p.symbol)}</strong></td>
-        <td class="o2 end"><span class="side ${p.side === 'Buy' ? 'side-long' : 'side-short'}">${p.side === 'Buy' ? 'LONG' : 'SHORT'}</span></td>
-        <td class="num" data-label="Size">${qty(p.size)}</td>
-        <td class="num" data-label="Entry">${price(p.entry)}</td>
-        <td class="num" data-label="Mark">${price(p.mark)}</td>
-        <td class="o3 span2 c-pnl num fw-semibold ${pnlClass(p.pnl)}" data-label="P/L">${signed(p.pnl)}<small class="d-block">${p.roe >= 0 ? '+' : ''}${fmt(p.roe)}%</small></td>
-        <td class="num" data-label="SL">${price(p.sl)}</td>
-        <td class="num" data-label="TP">${price(p.tp)}</td>
-        <td data-label="Leverage">${esc(p.leverage)}x</td>
-      </tr>`).join('');
-    }
-
-    function renderTrades() {
-      const a = state.account;
-      const body = $('trades-body');
-      if (!a || a.configured === false) { body.innerHTML = emptyRow(7, a ? a.errors[0] : 'Xogta Bybit lama helin'); $('trades-summary').textContent = ''; return; }
-
-      const trades = a.trades || [];
-      if (!trades.length) { body.innerHTML = emptyRow(7, 'Ma jiraan trades xidhan (7 maalmood)'); $('trades-summary').textContent = ''; return; }
-
-      const total = sum(trades.map((t) => t.pnl));
-      $('trades-summary').innerHTML = `${trades.length} trades · Net <span class="${pnlClass(total)} fw-semibold">${signed(total)}</span>`;
-
-      body.innerHTML = trades.slice(0, 200).map((t) => `<tr>
-        <td class="o3 span2 small text-muted">${new Date(t.time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
-        <td class="o1"><strong>${esc(t.symbol)}</strong></td>
-        <td class="num" data-label="Entry">${price(t.entry)}</td>
-        <td class="num" data-label="Exit">${price(t.exit)}</td>
-        <td class="num" data-label="Qty">${qty(t.qty)}</td>
-        <td data-label="Leverage">${esc(t.leverage)}x</td>
-        <td class="o2 end c-pnl num text-end fw-semibold ${pnlClass(t.pnl)}">${signed(t.pnl)}</td>
-      </tr>`).join('');
-    }
-
-    /* ---------- Chart ---------- */
-    let chart = null;
-
-    const rgba = (up, a) => (up ? `rgba(45,212,122,${a})` : `rgba(255,92,108,${a})`);
-
-    function fillGradient(up) {
-      return (ctx) => {
-        const area = ctx.chart.chartArea;
-        if (!area) return rgba(up, 0.15);
-        const g = ctx.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
-        g.addColorStop(0, rgba(up, 0.38));
-        g.addColorStop(1, rgba(up, 0));
-        return g;
-      };
-    }
-
-    function renderChart() {
-      if (typeof Chart === 'undefined') return;
-      const trades = [...((state.account && state.account.trades) || [])].sort((a, b) => a.time - b.time);
-      let cum = 0;
-      const labels = [];
-      const data = [];
-      trades.forEach((t) => {
-        cum += t.pnl;
-        labels.push(new Date(t.time).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }));
-        data.push(Number(cum.toFixed(4)));
-      });
-
-      const up = cum >= 0;
-      const color = up ? '#2dd47a' : '#ff5c6c';
-      $('chart-empty').classList.toggle('d-none', data.length > 0);
-      $('chart-total').textContent = data.length ? signed(cum) : '';
-      $('chart-total').className = 'small fw-bold num ' + pnlClass(cum);
-
-      if (!chart) {
-        chart = new Chart($('pnl-chart'), {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [{
-              data, borderColor: color, backgroundColor: fillGradient(up), fill: true, tension: 0.35,
-              pointRadius: 0, pointHoverRadius: 5, pointHoverBackgroundColor: color, borderWidth: 2.5
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                displayColors: false, padding: 10, backgroundColor: '#0f1a2e', borderColor: 'rgba(255,255,255,.14)', borderWidth: 1,
-                titleColor: '#8190ad', bodyColor: '#e8eefb',
-                callbacks: { label: (c) => `P/L: ${signed(c.parsed.y)}` }
-              }
-            },
-            scales: {
-              x: { ticks: { color: '#8190ad', maxTicksLimit: window.matchMedia('(max-width: 767.98px)').matches ? 3 : 5, maxRotation: 0 }, grid: { display: false }, border: { display: false } },
-              y: { ticks: { color: '#8190ad', callback: (v) => '$' + v }, grid: { color: 'rgba(255,255,255,.06)' }, border: { display: false } }
+    async function checkStatus() {
+        try {
+            const res = await fetch('/api/status');
+            const result = await res.json();
+            if (result.success) {
+                document.getElementById('statusText').innerText = result.data.status.toUpperCase();
+                addLog(`Status Updated: ${result.data.status}`, 'success');
+            } else {
+                addLog(`Error fetching status: ${JSON.stringify(result.error)}`, 'error');
             }
-          }
-        });
-      } else {
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = data;
-        chart.data.datasets[0].borderColor = color;
-        chart.data.datasets[0].pointHoverBackgroundColor = color;
-        chart.data.datasets[0].backgroundColor = fillGradient(up);
-        chart.update();
-      }
+        } catch (err) {
+            addLog(`Server connection error: ${err.message}`, 'error');
+        }
     }
 
-    function renderAccount() {
-      const a = state.account;
-      const alertBox = $('account-alert');
-      if (a && a.errors && a.errors.length) {
-        alertBox.textContent = a.errors.join(' | ');
-        alertBox.classList.remove('d-none');
-      } else {
-        alertBox.classList.add('d-none');
-      }
-      renderStats();
-      renderPositions();
-      renderTrades();
-      renderChart();
+    async function sendCommand(action) {
+        addLog(`Executing command: ${action.toUpperCase()}...`);
+        try {
+            const res = await fetch(`/api/${action}`, { method: 'POST' });
+            const result = await res.json();
+            if (result.success) {
+                addLog(result.message, 'success');
+                checkStatus();
+            } else {
+                addLog(`Command failed: ${JSON.stringify(result.error)}`, 'error');
+            }
+        } catch (err) {
+            addLog(`Failed to communicate with Server API: ${err.message}`, 'error');
+        }
     }
 
-    /* ---------- Bot logs (Render) ---------- */
-    const logsModal = new bootstrap.Modal($('logsModal'));
-    let logsBot = null;
-    let logsTimer = null;
+    // Initial fetch and clock
+    document.getElementById('currentTime').innerText = new Date().toLocaleDateString();
+    checkStatus();
+</script>
 
-    function logClass(msg) {
-      if (/error|exception|traceback|failed|fatal/i.test(msg)) return 'log-err';
-      if (/warn/i.test(msg)) return 'log-warn';
-      return 'log-line';
-    }
-
-    async function refreshLogs() {
-      if (!logsBot) return;
-      const box = $('logs-body');
-      const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
-      try {
-        const data = await api(`/api/logs/${encodeURIComponent(logsBot.id)}?ownerId=${encodeURIComponent(logsBot.ownerId || '')}`);
-        const logs = data.logs || [];
-        box.innerHTML = logs.length
-          ? logs.map((l) => `<div class="${logClass(l.message)}"><span class="text-secondary">${new Date(l.time).toLocaleTimeString()}</span> ${esc(l.message)}</div>`).join('')
-          : '<div class="text-muted">Logs ma jiraan (ama bot-ku wali ma bilaabin).</div>';
-        if (atBottom) box.scrollTop = box.scrollHeight;
-      } catch (err) {
-        box.innerHTML = `<div class="log-err">Cillad: ${esc(err.message)}</div>`;
-      }
-    }
-
-    function openLogs(bot) {
-      logsBot = bot;
-      $('logs-title').textContent = bot.name;
-      $('logs-body').textContent = 'Loading...';
-      logsModal.show();
-      refreshLogs().then(() => { $('logs-body').scrollTop = $('logs-body').scrollHeight; });
-      clearInterval(logsTimer);
-      logsTimer = setInterval(() => { if ($('logs-auto').checked) refreshLogs(); }, 5000);
-    }
-
-    $('logsModal').addEventListener('hidden.bs.modal', () => { clearInterval(logsTimer); logsBot = null; });
-    $('logs-refresh').addEventListener('click', refreshLogs);
-
-    /* ---------- Settings ---------- */
-    const toggleIds = ['autoScan', 'autoTrading', 'stopLoss', 'takeProfit'];
-    const valueIds = ['leverage', 'tradingMargin', 'scanInterval', 'maxOpenPositions'];
-
-    async function loadSettings() {
-      try {
-        const s = await api('/api/settings');
-        toggleIds.forEach((id) => { if (typeof s[id] === 'boolean') $(id).checked = s[id]; });
-        valueIds.forEach((id) => { if (s[id] !== undefined && s[id] !== '') $(id).value = s[id]; });
-      } catch (_) {}
-    }
-
-    $('settings-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const settings = {};
-      toggleIds.forEach((id) => { settings[id] = $(id).checked; });
-      valueIds.forEach((id) => { settings[id] = $(id).value; });
-      try {
-        await api('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) });
-        addLog(`Trading Settings Updated: Leverage=${settings.leverage}, Margin=$${settings.tradingMargin}, Interval=${settings.scanInterval}m, MaxPos=${settings.maxOpenPositions}`);
-        toast('Setimaha trading-ka si guul leh ayaa loo kaydiyay!');
-      } catch (err) {
-        addLog('Error saving settings: ' + err.message, true);
-        toast('Setimaha lama kaydin: ' + err.message, 'danger');
-      }
-    });
-
-    $('btn-clear-logs').addEventListener('click', () => {
-      $('log-console').innerHTML = '<div class="log-ok">[System] Logs cleared.</div>';
-    });
-
-    /* ---------- Refresh + polling ---------- */
-    async function refreshAll() {
-      const icon = $('refresh-icon');
-      icon.classList.add('fa-spin');
-      await Promise.all([loadBots(), loadAccount()]);
-      icon.classList.remove('fa-spin');
-    }
-
-    $('btn-refresh').addEventListener('click', refreshAll);
-
-    setInterval(() => { if (!document.hidden) loadAccount(); }, 15000);
-    setInterval(() => { if (!document.hidden) loadBots(); }, 20000);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshAll(); });
-
-    showView(location.hash.replace('#', '') || 'dashboard');
-    loadSettings();
-    refreshAll();
-  </script>
 </body>
 </html>
