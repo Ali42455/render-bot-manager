@@ -2,59 +2,625 @@
 <html lang="so">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Render Bot Manager</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 40px; }
-    h1 { color: #333; }
-    .card { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-    .bot-name { font-size: 18px; font-weight: bold; color: #2c3e50; }
-    .btn-restart { background: #e74c3c; color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; }
-    .btn-restart:hover { background: #c0392b; }
+    :root {
+      --bg: #0b1020;
+      --panel: #121a30;
+      --panel2: #18223f;
+      --border: #243053;
+      --text: #e8ecf8;
+      --muted: #8c97b8;
+      --accent: #5b8cff;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --off: #94a3b8;
+      --purple: #a78bfa;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    [hidden] { display: none !important; }
+    html, body { margin: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, #16224a 0%, transparent 60%), var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    button { font-family: inherit; cursor: pointer; }
+
+    /* ---------- Header ---------- */
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(11, 16, 32, .85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding-top: env(safe-area-inset-top);
+    }
+    .head-in { max-width: 1200px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+    .logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--purple)); display: grid; place-items: center; color: #fff; flex: none; }
+    .head-t { flex: 1; min-width: 0; }
+    .head-t h1 { font-size: 17px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .head-t small { color: var(--muted); font-size: 12px; }
+    .head-btns { display: flex; align-items: center; gap: 8px; }
+    .ibtn { width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--text); display: grid; place-items: center; }
+    .ibtn:hover { background: var(--panel2); }
+    .ibtn.spin .i { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .auto { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); padding: 0 4px; }
+    .sw { position: relative; width: 38px; height: 22px; }
+    .sw input { opacity: 0; width: 100%; height: 100%; position: absolute; inset: 0; margin: 0; cursor: pointer; z-index: 2; }
+    .sw span { position: absolute; inset: 0; background: var(--border); border-radius: 22px; transition: .2s; }
+    .sw span::after { content: ""; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; border-radius: 50%; background: #fff; transition: .2s; }
+    .sw input:checked + span { background: var(--ok); }
+    .sw input:checked + span::after { transform: translateX(16px); }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+
+    /* ---------- Stats ---------- */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+    .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+    .stat b { display: block; font-size: 24px; line-height: 1.1; }
+    .stat span { font-size: 12px; color: var(--muted); }
+    .stat.ok b { color: var(--ok); } .stat.off b { color: var(--off); } .stat.bad b { color: var(--bad); }
+
+    /* ---------- Toolbar ---------- */
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .search { flex: 1 1 220px; position: relative; }
+    .search .i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); width: 18px; height: 18px; }
+    .inp {
+      width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--text);
+      border-radius: 12px; padding: 12px 14px; font-size: 16px; outline: none;
+    }
+    .inp:focus { border-color: var(--accent); }
+    .search .inp { padding-left: 40px; }
+    .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+    .chip { border: 1px solid var(--border); background: var(--panel); color: var(--muted); padding: 10px 14px; border-radius: 999px; font-size: 14px; white-space: nowrap; }
+    .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* ---------- Cards ---------- */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    .card { background: linear-gradient(180deg, var(--panel), #0f1730); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; transition: .15s; }
+    .card:hover { border-color: #33427a; }
+    .card.busy { opacity: .6; pointer-events: none; }
+    .card-top { display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 44px; height: 44px; border-radius: 12px; background: var(--panel2); color: var(--accent); display: grid; place-items: center; flex: none; }
+    .titles { flex: 1; min-width: 0; }
+    .titles h3 { margin: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .icon-link { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); border: 1px solid var(--border); text-decoration: none; }
+    .icon-link:hover { color: var(--text); background: var(--panel2); }
+    .status-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: rgba(148,163,184,.12); }
+    .badge i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .badge.ok { color: var(--ok); background: rgba(34,197,94,.12); }
+    .badge.warn { color: var(--warn); background: rgba(245,158,11,.12); }
+    .badge.warn i { animation: pulse 1s infinite; }
+    .badge.bad { color: var(--bad); background: rgba(239,68,68,.12); }
+    .badge.off { color: var(--off); }
+    @keyframes pulse { 50% { opacity: .25; } }
+    .when { font-size: 12px; color: var(--muted); }
+    .commit { font-size: 12px; color: var(--muted); background: rgba(255,255,255,.03); border-radius: 10px; padding: 8px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 2px; }
+    .act { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 58px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel2); color: var(--text); font-size: 12px; padding: 8px 4px; transition: .15s; }
+    .act:hover:not(:disabled) { transform: translateY(-1px); border-color: currentColor; }
+    .act:disabled { opacity: .35; cursor: not-allowed; }
+    .act.restart { color: var(--accent); }
+    .act.deploy { color: var(--purple); }
+    .act.suspend { color: var(--warn); }
+    .act.resume { color: var(--ok); }
+    .act.logs { color: #38bdf8; }
+    .act.env { color: #e2e8f0; }
+    .act.delete { color: var(--bad); }
+    .act span { color: var(--text); }
+
+    .empty, .errbox { text-align: center; color: var(--muted); padding: 40px 16px; border: 1px dashed var(--border); border-radius: var(--radius); }
+    .errbox { color: #fecaca; border-color: rgba(239,68,68,.5); background: rgba(239,68,68,.08); margin-bottom: 14px; padding: 14px; }
+
+    /* ---------- Modal ---------- */
+    .overlay { position: fixed; inset: 0; background: rgba(3,6,15,.7); backdrop-filter: blur(4px); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .modal { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; width: 100%; max-width: 440px; max-height: 90vh; overflow: auto; padding: 20px; }
+    .modal.wide { max-width: 760px; }
+    .modal h2 { margin: 0 0 10px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+    .mhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .mhead h2 { margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mhead > div { display: flex; gap: 8px; }
+    .mtext { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 14px; }
+    .mbtns { display: flex; gap: 10px; margin-top: 16px; }
+    .btn { flex: 1; border: 0; border-radius: 12px; padding: 13px 16px; font-size: 15px; font-weight: 600; color: #fff; background: var(--panel2); }
+    .btn.primary { background: var(--accent); }
+    .btn.danger { background: var(--bad); }
+    .btn.ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .chk { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); margin-top: 6px; }
+    .chk input { width: 20px; height: 20px; }
+    pre.logs { background: #060a16; border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin: 0; font-size: 12px; line-height: 1.5; color: #c7d2fe; height: 55vh; overflow: auto; white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .note { font-size: 13px; color: var(--warn); background: rgba(245,158,11,.1); border-radius: 10px; padding: 10px 12px; margin: 0 0 12px; line-height: 1.5; }
+    .ev { background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; }
+    .evk { font-size: 13px; font-weight: 700; margin-bottom: 8px; word-break: break-all; }
+    .evv { display: flex; gap: 6px; }
+    .evv .inp { padding: 10px 12px; font-size: 15px; min-width: 0; }
+    .sm { width: 42px; height: 42px; flex: none; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); color: var(--text); display: grid; place-items: center; padding: 0; }
+    .sm.save { color: var(--ok); } .sm.del { color: var(--bad); }
+    .newev { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); }
+    .newev h4 { margin: 0; font-size: 14px; color: var(--muted); }
+    .x { width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel2); color: var(--text); display: grid; place-items: center; }
+
+    /* ---------- Login ---------- */
+    #login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .lbox { width: 100%; max-width: 360px; background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 26px; text-align: center; }
+    .lbox .logo { margin: 0 auto 14px; width: 56px; height: 56px; border-radius: 16px; }
+    .lbox h2 { margin: 0 0 4px; }
+    .lbox p { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
+    .lbox .inp { margin-bottom: 12px; text-align: center; }
+    .lerr { color: var(--bad); font-size: 13px; min-height: 18px; margin-bottom: 8px; }
+
+    /* ---------- Toast ---------- */
+    #toasts { position: fixed; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 200; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; padding: 0 16px; }
+    .toast { background: #1f2a4d; border: 1px solid var(--border); color: var(--text); padding: 12px 16px; border-radius: 12px; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.4); max-width: 420px; animation: up .2s ease; }
+    .toast.ok { border-color: var(--ok); } .toast.bad { border-color: var(--bad); }
+    @keyframes up { from { transform: translateY(10px); opacity: 0; } }
+
+    @media (max-width: 560px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .grid { grid-template-columns: 1fr; }
+      .auto small { display: none; }
+      .head-t small { display: none; }
+      .modal { padding: 16px; }
+    }
   </style>
 </head>
 <body>
 
-  <h1>🤖 Maamulaha Bots-ka ee Render</h1>
-  <div id="bot-list">Soo dejineysa liiska bots-ka...</div>
+<!-- Icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.5 15a9 9 0 1 1-2.1-9.4L23 10"/></symbol>
+    <symbol id="i-deploy" viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.4 18.4A5 5 0 0 0 18 9h-1.3A8 8 0 1 0 3 16.3"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  </defs>
+</svg>
 
-  <script>
-    async function getBots() {
-      const res = await fetch('/api/services');
-      const data = await res.json();
-      const container = document.getElementById('bot-list');
-      container.innerHTML = '';
+<!-- Login -->
+<div id="login" hidden>
+  <form class="lbox" id="lform">
+    <div class="logo"><svg class="i"><use href="#i-lock"/></svg></div>
+    <h2>Maamulaha Bots-ka</h2>
+    <p>Geli furaha sirta ah si aad u gasho</p>
+    <input class="inp" id="lpass" type="password" placeholder="Furaha sirta ah" autocomplete="current-password">
+    <div class="lerr" id="lerr"></div>
+    <button class="btn primary" type="submit" style="width:100%">Gal</button>
+  </form>
+</div>
 
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p>Wax bot ah oo Render ku jira la ma helin.</p>';
-        return;
+<header>
+  <div class="head-in">
+    <div class="logo"><svg class="i"><use href="#i-bot"/></svg></div>
+    <div class="head-t">
+      <h1>Maamulaha Bots-ka</h1>
+      <small id="upd">Render API</small>
+    </div>
+    <div class="head-btns">
+      <label class="auto" title="Is-cusboonaysiin">
+        <small>Auto</small>
+        <span class="sw"><input type="checkbox" id="auto" checked><span></span></span>
+      </label>
+      <button class="ibtn" id="refresh" aria-label="Cusboonaysii"><svg class="i"><use href="#i-refresh"/></svg></button>
+      <button class="ibtn" id="logout" aria-label="Ka bax"><svg class="i"><use href="#i-logout"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat"><b id="s-all">0</b><span>Wadarta</span></div>
+    <div class="stat ok"><b id="s-ok">0</b><span>Shaqeynaya</span></div>
+    <div class="stat off"><b id="s-off">0</b><span>Joojisan</span></div>
+    <div class="stat bad"><b id="s-bad">0</b><span>Cillad</span></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg class="i"><use href="#i-search"/></svg>
+      <input class="inp" id="q" placeholder="Raadi bot..." autocomplete="off">
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip on" data-f="all">Dhammaan</button>
+      <button class="chip" data-f="ok">Shaqeynaya</button>
+      <button class="chip" data-f="off">Joojisan</button>
+      <button class="chip" data-f="bad">Cillad</button>
+    </div>
+  </div>
+
+  <div class="errbox" id="err" hidden></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<div id="toasts"></div>
+
+<script>
+  // ---------- Caawiye yaal ----------
+  const $ = (s, el = document) => el.querySelector(s);
+  const ICON = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
+  const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} return null; }
+
+  let KEY = store('rbm_key') || '';
+  let services = [];
+  let filter = 'all';
+  let query = '';
+  let timer = null;
+  let loading = false;
+  const busy = new Set();
+
+  const TYPES = { web_service: 'Web Service', background_worker: 'Background Worker', private_service: 'Private Service', static_site: 'Static Site', cron_job: 'Cron Job' };
+  const IN_PROGRESS = ['created', 'build_in_progress', 'update_in_progress', 'pre_deploy_in_progress'];
+
+  function statusOf(s) {
+    if (s.suspended) return { k: 'off', t: 'Joojisan' };
+    const st = s.deploy && s.deploy.status;
+    if (!st || st === 'live' || st === 'deactivated') return { k: 'ok', t: 'Shaqeynaya' };
+    if (IN_PROGRESS.includes(st)) return { k: 'warn', t: 'Dhisaya...' };
+    if (st === 'canceled') return { k: 'warn', t: 'Deploy la joojiyay' };
+    if (/failed/.test(st)) return { k: 'bad', t: 'Cillad' };
+    return { k: 'ok', t: 'Shaqeynaya' };
+  }
+
+  function ago(iso) {
+    if (!iso) return '';
+    const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 60) return 'hadda';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + ' daq kahor';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + ' saac kahor';
+    return Math.floor(h / 24) + ' maalin kahor';
+  }
+
+  function toast(msg, kind) {
+    const t = document.createElement('div');
+    t.className = 'toast ' + (kind || '');
+    t.textContent = msg;
+    $('#toasts').appendChild(t);
+    setTimeout(() => t.remove(), 3800);
+  }
+
+  // ---------- API ----------
+  async function api(path, opts = {}) {
+    const res = await fetch('/api' + path, {
+      ...opts,
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': KEY, ...(opts.headers || {}) }
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e) {}
+    if (res.status === 401) {
+      KEY = ''; store('rbm_key', null);
+      showLogin('Furaha waa khalad');
+      throw new Error('401');
+    }
+    if (!res.ok) throw new Error((data && data.error) || 'Cillad (' + res.status + ')');
+    return data;
+  }
+
+  // ---------- Login ----------
+  function showLogin(msg) {
+    $('#login').hidden = false;
+    $('#lerr').textContent = msg || '';
+    $('#lpass').value = '';
+    setTimeout(() => $('#lpass').focus(), 50);
+  }
+  $('#lform').addEventListener('submit', e => {
+    e.preventDefault();
+    KEY = $('#lpass').value;
+    if (!KEY) return;
+    store('rbm_key', KEY);
+    load();
+  });
+  $('#logout').addEventListener('click', () => {
+    KEY = ''; store('rbm_key', null);
+    clearTimeout(timer);
+    services = []; render();
+    showLogin('');
+  });
+
+  // ---------- Soo dejin ----------
+  async function load(silent) {
+    if (!KEY) { showLogin(''); return; }
+    if (loading) return;
+    loading = true;
+    $('#refresh').classList.add('spin');
+    if (!silent && !services.length) $('#grid').innerHTML = '<div class="empty">Soo dejineysa liiska bots-ka...</div>';
+    try {
+      const d = await api('/services');
+      services = d.services || [];
+      $('#login').hidden = true;
+      $('#err').hidden = true;
+      $('#upd').textContent = 'La cusboonaysiiyay ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      render();
+    } catch (e) {
+      if (e.message !== '401') {
+        $('#err').hidden = false;
+        $('#err').textContent = e.message;
+        if (!services.length) $('#grid').innerHTML = '';
       }
+    } finally {
+      loading = false;
+      $('#refresh').classList.remove('spin');
+      schedule();
+    }
+  }
 
-      data.forEach(item => {
-        const bot = item.service;
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerHTML = `
-          <div>
-            <div class="bot-name">${bot.name}</div>
-            <small>ID: ${bot.id} | Type: ${bot.type}</small>
-          </div>
-          <button class="btn-restart" onclick="restartBot('${bot.id}')">🔄 Dib u Bilow (Restart)</button>
-        `;
-        container.appendChild(div);
+  function schedule() {
+    clearTimeout(timer);
+    if (!KEY || !$('#auto').checked || document.hidden) return;
+    const fast = services.some(s => statusOf(s).k === 'warn');
+    timer = setTimeout(() => load(true), fast ? 8000 : 30000);
+  }
+  $('#auto').checked = store('rbm_auto') !== '0';
+  $('#auto').addEventListener('change', () => { store('rbm_auto', $('#auto').checked ? '1' : '0'); schedule(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); else clearTimeout(timer); });
+  $('#refresh').addEventListener('click', () => load());
+
+  // ---------- Muuqaalka ----------
+  function btn(act, icon, label, id, disabled) {
+    return `<button class="act ${act}" data-act="${act}" data-id="${esc(id)}" ${disabled ? 'disabled' : ''}>${ICON(icon)}<span>${label}</span></button>`;
+  }
+
+  function card(s) {
+    const st = statusOf(s);
+    const d = s.deploy;
+    const noRun = s.suspended || s.type === 'static_site';
+    const meta = [TYPES[s.type] || s.type, s.region, s.plan].filter(Boolean).map(esc).join(' · ');
+    const link = s.url && /^https?:\/\//.test(s.url) ? `<a class="icon-link" href="${esc(s.url)}" target="_blank" rel="noopener" aria-label="Fur">${ICON('link')}</a>` : '';
+    return `<article class="card ${busy.has(s.id) ? 'busy' : ''}">
+      <div class="card-top">
+        <div class="avatar">${ICON('bot')}</div>
+        <div class="titles"><h3>${esc(s.name)}</h3><div class="sub">${meta}</div></div>
+        ${link}
+      </div>
+      <div class="status-row">
+        <span class="badge ${st.k}"><i></i>${st.t}</span>
+        <span class="when">${d ? 'Deploy: ' + esc(ago(d.createdAt)) : ''}</span>
+      </div>
+      ${d && d.commit ? `<div class="commit" title="${esc(d.commit)}">${esc(d.commit)}</div>` : ''}
+      <div class="actions">
+        ${btn('restart', 'restart', 'Restart', s.id, noRun)}
+        ${btn('deploy', 'deploy', 'Deploy', s.id, s.suspended)}
+        ${s.suspended ? btn('resume', 'play', 'Bilow', s.id, false) : btn('suspend', 'pause', 'Jooji', s.id, false)}
+        ${btn('logs', 'terminal', 'Logs', s.id, false)}
+        ${btn('env', 'sliders', 'Settings', s.id, false)}
+        ${btn('delete', 'trash', 'Tirtir', s.id, false)}
+      </div>
+    </article>`;
+  }
+
+  function render() {
+    const c = { all: services.length, ok: 0, off: 0, bad: 0 };
+    services.forEach(s => { const k = statusOf(s).k; if (c[k] !== undefined) c[k]++; });
+    $('#s-all').textContent = c.all; $('#s-ok').textContent = c.ok; $('#s-off').textContent = c.off; $('#s-bad').textContent = c.bad;
+
+    const q = query.trim().toLowerCase();
+    const list = services.filter(s => (filter === 'all' || statusOf(s).k === filter) && (!q || s.name.toLowerCase().includes(q)));
+    $('#grid').innerHTML = list.length ? list.map(card).join('') : `<div class="empty" style="grid-column:1/-1">${services.length ? 'Wax natiijo ah lama helin.' : 'Wax bot ah oo Render ku jira lama helin.'}</div>`;
+  }
+
+  $('#q').addEventListener('input', e => { query = e.target.value; render(); });
+  $('#chips').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    filter = b.dataset.f;
+    document.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b));
+    render();
+  });
+
+  // ---------- Modal ----------
+  function modal(html, cls, onClose) {
+    const wrap = document.createElement('div');
+    wrap.className = 'overlay';
+    wrap.innerHTML = `<div class="modal ${cls || ''}" role="dialog" aria-modal="true">${html}</div>`;
+    document.body.appendChild(wrap);
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    function close() {
+      if (!wrap.isConnected) return;
+      wrap.remove();
+      document.removeEventListener('keydown', onKey);
+      if (onClose) onClose();
+    }
+    document.addEventListener('keydown', onKey);
+    wrap.addEventListener('mousedown', e => { if (e.target === wrap) close(); });
+    wrap.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', close));
+    return { el: wrap, close };
+  }
+
+  function confirmBox({ title, text, okText, danger, clearOpt, requireName }) {
+    return new Promise(resolve => {
+      const m = modal(`
+        <h2>${esc(title)}</h2>
+        <p class="mtext">${esc(text)}</p>
+        ${clearOpt ? `<label class="chk"><input type="checkbox" id="clr"> Nadiifi cache-ka (Clear cache)</label>` : ''}
+        ${requireName ? `<input class="inp" id="cn" placeholder="${esc(requireName)}" autocomplete="off" autocapitalize="off">` : ''}
+        <div class="mbtns">
+          <button class="btn ghost" data-close>Jooji</button>
+          <button class="btn ${danger ? 'danger' : 'primary'}" id="ok" ${requireName ? 'disabled' : ''}>${esc(okText)}</button>
+        </div>`, '', () => resolve(null));
+      const ok = $('#ok', m.el);
+      if (requireName) {
+        const inp = $('#cn', m.el);
+        inp.addEventListener('input', () => { ok.disabled = inp.value.trim() !== requireName; });
+        setTimeout(() => inp.focus(), 50);
+      }
+      ok.addEventListener('click', () => {
+        const clr = $('#clr', m.el);
+        resolve({ clear: !!(clr && clr.checked) });
+        m.close();
       });
-    }
+    });
+  }
 
-    async function restartBot(serviceId) {
-      if (!confirm('Ma meel dhigtay inaad dib u bilowdo bot-kan?')) return;
-      const res = await fetch(`/api/restart/${serviceId}`, { method: 'POST' });
-      if (res.ok) {
-        alert('Bot-ka dib ayaa loo bilaabay!');
-      } else {
-        alert('Cillad ayaa dhacday marka bot-ka dib loo bilaabayay.');
+  // ---------- Logs ----------
+  function showLogs(s) {
+    const m = modal(`
+      <div class="mhead"><h2>${ICON('terminal')} ${esc(s.name)}</h2>
+        <div><button class="x" id="lr" aria-label="Cusboonaysii">${ICON('refresh')}</button><button class="x" data-close aria-label="Xidh">${ICON('x')}</button></div>
+      </div>
+      <pre class="logs" id="lg"></pre>`, 'wide');
+    const pre = $('#lg', m.el);
+    async function go() {
+      pre.textContent = 'Soo dejineysa...';
+      try {
+        const d = await api(`/services/${encodeURIComponent(s.id)}/logs?ownerId=${encodeURIComponent(s.ownerId)}`);
+        const lines = (d.logs || []).map(l => new Date(l.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + '  ' + String(l.m).replace(/\x1b\[[0-9;]*m/g, ''));
+        pre.textContent = lines.length ? lines.join('\n') : 'Log ma jiro.';
+        pre.scrollTop = pre.scrollHeight;
+      } catch (e) {
+        if (e.message !== '401') pre.textContent = 'Cillad: ' + e.message;
       }
     }
+    $('#lr', m.el).addEventListener('click', go);
+    go();
+  }
 
-    getBots();
-  </script>
+  // ---------- Settings (Environment variables) ----------
+  function showEnv(s) {
+    const m = modal(`
+      <div class="mhead"><h2>${ICON('sliders')} ${esc(s.name)}</h2>
+        <div><button class="x" data-close aria-label="Xidh">${ICON('x')}</button></div>
+      </div>
+      <p class="note">Ka dib marka aad wax beddesho, riix <b>Deploy</b> si isbeddelku u shaqeeyo.</p>
+      <div id="evs">Soo dejineysa...</div>
+      <div class="newev">
+        <h4>Variable cusub ku dar</h4>
+        <input class="inp" id="nk" placeholder="MAGAC_VARIABLE" autocomplete="off" autocapitalize="off">
+        <input class="inp" id="nv" placeholder="Qiimaha" autocomplete="off" autocapitalize="off">
+        <button class="btn primary" id="na">${ICON('plus')} Ku dar</button>
+      </div>`, 'wide');
+    const box = $('#evs', m.el);
+    const url = k => `/services/${encodeURIComponent(s.id)}/env/${encodeURIComponent(k)}`;
+
+    async function go() {
+      try {
+        const d = await api(`/services/${encodeURIComponent(s.id)}/env`);
+        const vars = d.vars || [];
+        box.innerHTML = vars.length ? vars.map(v => `
+          <div class="ev" data-k="${esc(v.key)}">
+            <div class="evk">${esc(v.key)}</div>
+            <div class="evv">
+              <input class="inp" type="password" value="${esc(v.value)}" autocomplete="off">
+              <button class="sm" data-a="eye" aria-label="Muuji">${ICON('eye')}</button>
+              <button class="sm save" data-a="save" aria-label="Keydi">${ICON('check')}</button>
+              <button class="sm del" data-a="del" aria-label="Tirtir">${ICON('trash')}</button>
+            </div>
+          </div>`).join('') : '<p class="mtext">Variable lama helin.</p>';
+      } catch (e) { if (e.message !== '401') box.textContent = 'Cillad: ' + e.message; }
+    }
+
+    box.addEventListener('click', async e => {
+      const b = e.target.closest('button[data-a]'); if (!b) return;
+      const row = b.closest('.ev'); const key = row.dataset.k; const inp = $('input', row);
+      if (b.dataset.a === 'eye') {
+        const show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        b.innerHTML = ICON(show ? 'eyeoff' : 'eye');
+      } else if (b.dataset.a === 'save') {
+        b.disabled = true;
+        try { await api(url(key), { method: 'PUT', body: JSON.stringify({ value: inp.value }) }); toast(key + ' waa la keydiyay', 'ok'); }
+        catch (er) { if (er.message !== '401') toast(er.message, 'bad'); }
+        b.disabled = false;
+      } else if (b.dataset.a === 'del') {
+        const r = await confirmBox({ title: 'Tirtir ' + key + '?', text: 'Variable-kan Render ayaa laga tirtiri doonaa.', okText: 'Tirtir', danger: true });
+        if (!r) return;
+        try { await api(url(key), { method: 'DELETE' }); toast(key + ' waa la tirtiray', 'ok'); go(); }
+        catch (er) { if (er.message !== '401') toast(er.message, 'bad'); }
+      }
+    });
+
+    $('#na', m.el).addEventListener('click', async () => {
+      const k = $('#nk', m.el).value.trim(); const v = $('#nv', m.el).value;
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)) { toast('Magaca variable-ka waa khalad (xarfo, tiro iyo _ kaliya)', 'bad'); return; }
+      try {
+        await api(url(k), { method: 'PUT', body: JSON.stringify({ value: v }) });
+        toast(k + ' waa la daray', 'ok');
+        $('#nk', m.el).value = ''; $('#nv', m.el).value = '';
+        go();
+      } catch (er) { if (er.message !== '401') toast(er.message, 'bad'); }
+    });
+
+    go();
+  }
+
+  // ---------- Ficillada badhamada ----------
+  async function run(s, okMsg, fn) {
+    busy.add(s.id); render();
+    try { await fn(); toast(okMsg, 'ok'); }
+    catch (e) { if (e.message !== '401') toast(e.message, 'bad'); }
+    finally { busy.delete(s.id); setTimeout(() => load(true), 1500); render(); }
+  }
+
+  $('#grid').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-act]');
+    if (!b || b.disabled) return;
+    const s = services.find(x => x.id === b.dataset.id);
+    if (!s) return;
+    const base = `/services/${encodeURIComponent(s.id)}`;
+
+    switch (b.dataset.act) {
+      case 'restart': {
+        const r = await confirmBox({ title: 'Restart ' + s.name + '?', text: 'Bot-ka dib ayaa loo bilaabi doonaa.', okText: 'Restart' });
+        if (r) run(s, 'Restart waa la bilaabay', () => api(base + '/restart', { method: 'POST' }));
+        break;
+      }
+      case 'deploy': {
+        const r = await confirmBox({ title: 'Deploy cusub?', text: s.name + ' — koodka ugu dambeeyay ayaa dib loo dhisi doonaa.', okText: 'Deploy', clearOpt: true });
+        if (r) run(s, 'Deploy waa la bilaabay', () => api(base + '/deploy', { method: 'POST', body: JSON.stringify({ clearCache: r.clear }) }));
+        break;
+      }
+      case 'suspend': {
+        const r = await confirmBox({ title: 'Jooji ' + s.name + '?', text: 'Bot-ka wuu istaagayaa ilaa aad mar kale bilowdo.', okText: 'Jooji', danger: true });
+        if (r) run(s, 'Bot-ka waa la joojiyay', () => api(base + '/suspend', { method: 'POST' }));
+        break;
+      }
+      case 'resume':
+        run(s, 'Bot-ka waa la bilaabay', () => api(base + '/resume', { method: 'POST' }));
+        break;
+      case 'logs': showLogs(s); break;
+      case 'env': showEnv(s); break;
+      case 'delete': {
+        const r = await confirmBox({ title: 'Tirtir ' + s.name + '?', text: 'Tani dib looguma noqon karo. Si aad u xaqiijiso, ku qor magaca bot-ka:', okText: 'Tirtir weligii', danger: true, requireName: s.name });
+        if (r) run(s, 'Bot-ka waa la tirtiray', async () => {
+          await api(base, { method: 'DELETE' });
+          services = services.filter(x => x.id !== s.id);
+        });
+        break;
+      }
+    }
+  });
+
+  // ---------- Bilow ----------
+  load();
+</script>
 </body>
 </html>
